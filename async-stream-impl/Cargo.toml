@@ -1,0 +1,15 @@
+[package]
+name = "async-stream-impl"
+version = "0.1.0"
+authors = ["Carl Lerche <me@carllerche.com>"]
+edition = "2018"
+
+[lib]
+proc-macro = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+proc-macro-hack = "0.5.8"
+syn = { version = "0.15.43", features = ["visit-mut"]}
+quote = "0.6.13"
