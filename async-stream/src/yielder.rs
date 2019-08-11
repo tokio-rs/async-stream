@@ -43,7 +43,7 @@ struct Send<T> {
 impl<T: Unpin + 'static> Future for Send<T> {
     type Output = ();
 
-    fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<()> {
+    fn poll(mut self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<()> {
         if self.value.is_none() {
             return Poll::Ready(());
         }

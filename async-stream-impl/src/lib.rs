@@ -8,12 +8,15 @@ use syn::parse::{Parse, ParseStream, Result};
 use syn::visit_mut::VisitMut;
 
 struct AsyncStreamImpl {
+    yielder: syn::Ident,
     stmts: Vec<syn::Stmt>,
+    num_yield: u32,
 }
 
 struct Scrub {
     yielder: syn::Ident,
     unit: Box<syn::Expr>,
+    num_yield: u32,
 }
 
 impl Parse for AsyncStreamImpl {
@@ -25,6 +28,7 @@ impl Parse for AsyncStreamImpl {
         let mut scrub = Scrub {
             yielder,
             unit: syn::parse_quote!(()),
+            num_yield: 0,
         };
 
         while !input.is_empty() {
@@ -33,7 +37,13 @@ impl Parse for AsyncStreamImpl {
             stmts.push(stmt);
         }
 
-        Ok(AsyncStreamImpl { stmts })
+        let Scrub { yielder, num_yield, .. } = scrub;
+
+        Ok(AsyncStreamImpl {
+            yielder,
+            stmts,
+            num_yield,
+        })
     }
 }
 
@@ -41,6 +51,8 @@ impl VisitMut for Scrub {
     fn visit_expr_mut(&mut self, i: &mut syn::Expr) {
         match i {
             syn::Expr::Yield(expr) => {
+                self.num_yield += 1;
+
                 let value_expr = if let Some(ref e) = expr.expr {
                     e
                 } else {
@@ -58,9 +70,22 @@ impl VisitMut for Scrub {
 #[proc_macro_hack]
 pub fn async_stream_impl(input: TokenStream) -> TokenStream {
     let AsyncStreamImpl {
+        yielder,
         stmts,
+        num_yield,
     } = syn::parse_macro_input!(input as AsyncStreamImpl);
 
-    quote!(#(#stmts)*).into()
-    // quote!(#input).into()
+    if num_yield == 0 {
+        quote!({
+            if false {
+                #yielder.send(()).await;
+            }
+
+            #(#stmts)*
+        }).into()
+    } else {
+        quote!({
+            #(#stmts)*
+        }).into()
+    }
 }
