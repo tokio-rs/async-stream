@@ -2,8 +2,10 @@
 
 use async_stream::stream;
 
-use tokio::prelude::*;
 use futures_util::pin_mut;
+use tokio::prelude::*;
+use tokio::sync::mpsc;
+use tokio_test::assert_ok;
 
 #[tokio::test]
 async fn noop_stream() {
@@ -80,4 +82,44 @@ async fn return_stream() {
     assert_eq!(1, values[0]);
     assert_eq!(2, values[1]);
     assert_eq!(3, values[2]);
+}
+
+#[tokio::test]
+async fn consume_channel() {
+    let (mut tx, mut rx) = mpsc::channel(10);
+
+    let s = stream! {
+        while let Some(v) = rx.recv().await {
+            yield v;
+        }
+    };
+
+    pin_mut!(s);
+
+    for i in 0..3 {
+        assert_ok!(tx.send(i).await);
+        assert_eq!(Some(i), s.next().await);
+    }
+
+    drop(tx);
+    assert_eq!(None, s.next().await);
+}
+
+#[tokio::test]
+async fn borrow_self() {
+    struct Data(String);
+
+    impl Data {
+        fn stream<'a>(&'a self) -> impl Stream<Item = &str> + 'a {
+            stream! {
+                yield &self.0[..];
+            }
+        }
+    }
+
+    let data = Data("hello".to_string());
+    let s = data.stream();
+    pin_mut!(s);
+
+    assert_eq!(Some("hello"), s.next().await);
 }
