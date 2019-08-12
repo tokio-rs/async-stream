@@ -16,6 +16,10 @@ use proc_macro_hack::proc_macro_hack;
 #[proc_macro_hack]
 pub use async_stream_impl::async_stream_impl;
 
+#[doc(hidden)]
+#[proc_macro_hack]
+pub use async_stream_impl::async_try_stream_impl;
+
 /// Asynchronous stream
 #[macro_export]
 macro_rules! stream {
@@ -23,6 +27,17 @@ macro_rules! stream {
         let (mut __yield_tx, __yield_rx) = $crate::yielder::pair();
         $crate::AsyncStream::new(__yield_rx, async move {
             $crate::async_stream_impl!(__yield_tx, $($body)*)
+        })
+    }}
+}
+
+/// Asynchronous fallible stream
+#[macro_export]
+macro_rules! try_stream {
+    ($($body:tt)*) => {{
+        let (mut __yield_tx, __yield_rx) = $crate::yielder::pair();
+        $crate::AsyncStream::new(__yield_rx, async move {
+            $crate::async_try_stream_impl!(__yield_tx, $($body)*)
         })
     }}
 }
