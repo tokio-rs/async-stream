@@ -123,3 +123,28 @@ async fn borrow_self() {
 
     assert_eq!(Some("hello"), s.next().await);
 }
+
+#[tokio::test]
+async fn stream_in_stream() {
+    let s = stream! {
+        let s = stream! {
+            for i in 0..3 {
+                yield i;
+            }
+        };
+
+        pin_mut!(s);
+        while let Some(v) = s.next().await {
+            yield v;
+        }
+    };
+
+    let values: Vec<_> = s.collect().await;
+    assert_eq!(3, values.len());
+}
+
+#[test]
+fn test() {
+    let t = trybuild::TestCases::new();
+    t.compile_fail("tests/ui/*.rs");
+}

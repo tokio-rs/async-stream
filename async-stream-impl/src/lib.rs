@@ -13,6 +13,7 @@ struct AsyncStreamImpl {
 }
 
 struct Scrub {
+    is_xforming: bool,
     is_try: bool,
     yielder: syn::Ident,
     unit: Box<syn::Expr>,
@@ -39,6 +40,11 @@ impl Parse for AsyncStreamImpl {
 
 impl VisitMut for Scrub {
     fn visit_expr_mut(&mut self, i: &mut syn::Expr) {
+        if !self.is_xforming {
+            syn::visit_mut::visit_expr_mut(self, i);
+            return;
+        }
+
         match i {
             syn::Expr::Yield(yield_expr) => {
                 self.num_yield += 1;
@@ -71,8 +77,22 @@ impl VisitMut for Scrub {
                     }
                 };
             }
-            expr => syn::visit_mut::visit_expr_mut(self, expr),
+            syn::Expr::Closure(_) |
+                syn::Expr::Async(_) => {
+                let prev = self.is_xforming;
+                self.is_xforming = false;
+                syn::visit_mut::visit_expr_mut(self, i);
+                self.is_xforming = prev;
+            }
+            _ => syn::visit_mut::visit_expr_mut(self, i),
         }
+    }
+
+    fn visit_item_mut(&mut self, i: &mut syn::Item) {
+        let prev = self.is_xforming;
+        self.is_xforming = false;
+        syn::visit_mut::visit_item_mut(self, i);
+        self.is_xforming = prev;
     }
 }
 
@@ -84,6 +104,7 @@ pub fn async_stream_impl(input: TokenStream) -> TokenStream {
     } = syn::parse_macro_input!(input as AsyncStreamImpl);
 
     let mut scrub = Scrub {
+        is_xforming: true,
         is_try: false,
         yielder,
         unit: syn::parse_quote!(()),
@@ -119,6 +140,7 @@ pub fn async_try_stream_impl(input: TokenStream) -> TokenStream {
     } = syn::parse_macro_input!(input as AsyncStreamImpl);
 
     let mut scrub = Scrub {
+        is_xforming: true,
         is_try: true,
         yielder,
         unit: syn::parse_quote!(()),
