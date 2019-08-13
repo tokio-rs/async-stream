@@ -20,7 +20,7 @@ repository = "https://github.com/tokio-rs/async-stream"
 readme = "README.md"
 
 [dependencies]
-async-stream-impl = { path = "../async-stream-impl" }
+async-stream-impl = { version = "0.1.0" }
 futures-core-preview = "=0.3.0-alpha.17"
 proc-macro-hack = "0.5.8"
 
