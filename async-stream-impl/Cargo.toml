@@ -10,6 +10,6 @@ proc-macro = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-proc-macro-hack = "0.5.8"
-syn = { version = "0.15.43", features = ["visit-mut"]}
-quote = "0.6.13"
+proc-macro2 = "1"
+syn = { version = "1", features = ["extra-traits", "full", "visit-mut"]}
+quote = "1"

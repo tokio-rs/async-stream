@@ -15,6 +15,7 @@ pub struct Receiver<T> {
 
 pub(crate) struct Enter<'a, T> {
     _rx: &'a mut Receiver<T>,
+    prev: *mut (),
 }
 
 pub fn pair<T>() -> (Sender<T>, Receiver<T>) {
@@ -67,13 +68,13 @@ impl<T: Unpin> Future for Send<T> {
 
 impl<T> Receiver<T> {
     pub(crate) fn enter<'a>(&'a mut self, dst: &'a mut Option<T>) -> Enter<'a, T> {
-        STORE.with(|cell| {
-            assert!(cell.get().is_null());
-
+        let prev = STORE.with(|cell| {
+            let prev = cell.get();
             cell.set(dst as *mut _ as *mut ());
+            prev
         });
 
-        Enter { _rx: self }
+        Enter { _rx: self, prev }
     }
 }
 
@@ -81,6 +82,6 @@ impl<T> Receiver<T> {
 
 impl<'a, T> Drop for Enter<'a, T> {
     fn drop(&mut self) {
-        STORE.with(|cell| cell.set(ptr::null_mut()))
+        STORE.with(|cell| cell.set(self.prev));
     }
 }

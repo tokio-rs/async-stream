@@ -1,40 +1,54 @@
 extern crate proc_macro;
 
-use proc_macro::TokenStream;
-use proc_macro_hack::proc_macro_hack;
+use proc_macro::{TokenStream, TokenTree};
+use proc_macro2::Span;
 use quote::quote;
-use syn::Token;
-use syn::parse::{Parse, ParseStream, Result};
 use syn::visit_mut::VisitMut;
-
-struct AsyncStreamImpl {
-    yielder: syn::Ident,
-    stmts: Vec<syn::Stmt>,
-}
 
 struct Scrub {
     is_xforming: bool,
     is_try: bool,
-    yielder: syn::Ident,
     unit: Box<syn::Expr>,
     num_yield: u32,
 }
 
-impl Parse for AsyncStreamImpl {
-    fn parse(input: ParseStream) -> Result<Self> {
-        let yielder: syn::Ident = input.parse()?;
-        input.parse::<Token![,]>()?;
+#[derive(Debug)]
+struct AsyncStreamEnumHack {
+    macro_ident: syn::Ident,
+    stmts: Vec<syn::Stmt>,
+}
 
-        let mut stmts = vec![];
-
-        while !input.is_empty() {
-            stmts.push(input.parse()?);
+impl AsyncStreamEnumHack {
+    fn parse(input: TokenStream) -> Self {
+        macro_rules! n {
+            ($i:ident) => { $i.next().unwrap() };
         }
 
-        Ok(AsyncStreamImpl {
-            yielder,
-            stmts,
-        })
+        let mut input = input.into_iter();
+        n!(input); // enum
+        n!(input); // ident
+
+        let mut braces = match n!(input) {
+            TokenTree::Group(group) => group.stream().into_iter(),
+            _ => unreachable!(),
+        };
+
+        n!(braces); // Dummy
+        n!(braces); // =
+        n!(braces); // $crate
+        n!(braces); // :
+        n!(braces); // :
+        n!(braces); // scrub
+        n!(braces); // !
+
+        let inner = n!(braces);
+        let syn::Block { stmts, .. } = syn::parse(inner.clone().into()).unwrap();
+
+        let macro_ident = syn::Ident::new(
+            &format!("stream_{}", count_bangs(inner.into())),
+            Span::call_site());
+
+        AsyncStreamEnumHack { stmts, macro_ident }
     }
 }
 
@@ -55,23 +69,23 @@ impl VisitMut for Scrub {
                     &self.unit
                 };
 
-                let ident = &self.yielder;
+                // let ident = &self.yielder;
 
                 *i = if self.is_try {
-                    syn::parse_quote! { #ident.send(Ok(#value_expr)).await }
+                    syn::parse_quote! { __yield_tx.send(Ok(#value_expr)).await }
                 } else {
-                    syn::parse_quote! { #ident.send(#value_expr).await }
+                    syn::parse_quote! { __yield_tx.send(#value_expr).await }
                 };
             }
             syn::Expr::Try(try_expr) => {
-                let ident = &self.yielder;
+                // let ident = &self.yielder;
                 let e = &try_expr.expr;
 
                 *i = syn::parse_quote! {
                     match #e {
                         Ok(v) => v,
                         Err(e) => {
-                            #ident.send(Err(e)).await;
+                            __yield_tx.send(Err(e)).await;
                             return;
                         }
                     }
@@ -96,74 +110,92 @@ impl VisitMut for Scrub {
     }
 }
 
-#[proc_macro_hack]
+#[proc_macro_derive(AsyncStreamHack)]
 pub fn async_stream_impl(input: TokenStream) -> TokenStream {
-    let AsyncStreamImpl {
-        yielder,
-        mut stmts,
-    } = syn::parse_macro_input!(input as AsyncStreamImpl);
+    let AsyncStreamEnumHack { macro_ident, mut stmts } =
+        AsyncStreamEnumHack::parse(input);
 
     let mut scrub = Scrub {
         is_xforming: true,
         is_try: false,
-        yielder,
         unit: syn::parse_quote!(()),
         num_yield: 0,
     };
 
-    for mut stmt in &mut stmts {
+    for mut stmt in &mut stmts[..] {
         scrub.visit_stmt_mut(&mut stmt);
     }
 
     if scrub.num_yield == 0 {
-        let yielder = &scrub.yielder;
+        quote!(macro_rules! #macro_ident {
+            () => {{
+                if false {
+                    __yield_tx.send(()).await;
+                }
 
-        quote!({
-            if false {
-                #yielder.send(()).await;
-            }
-
-            #(#stmts)*
+                #(#stmts)*
+            }};
         }).into()
     } else {
-        quote!({
-            #(#stmts)*
+        quote!(macro_rules! #macro_ident {
+            () => {{
+                #(#stmts)*
+            }};
         }).into()
     }
 }
 
-#[proc_macro_hack]
+#[proc_macro_derive(AsyncTryStreamHack)]
 pub fn async_try_stream_impl(input: TokenStream) -> TokenStream {
-    let AsyncStreamImpl {
-        yielder,
-        mut stmts,
-    } = syn::parse_macro_input!(input as AsyncStreamImpl);
+    let AsyncStreamEnumHack { macro_ident, mut stmts } =
+        AsyncStreamEnumHack::parse(input);
 
     let mut scrub = Scrub {
         is_xforming: true,
         is_try: true,
-        yielder,
         unit: syn::parse_quote!(()),
         num_yield: 0,
     };
 
-    for mut stmt in &mut stmts {
+    for mut stmt in &mut stmts[..] {
         scrub.visit_stmt_mut(&mut stmt);
     }
 
     if scrub.num_yield == 0 {
-        let yielder = &scrub.yielder;
+        quote!(macro_rules! #macro_ident {
+            () => {{
+                if false {
+                    __yield_tx.send(()).await;
+                }
 
-        quote!({
-            if false {
-                #yielder.send(()).await;
-            }
-
-            #(#stmts)*
+                #(#stmts)*
+            }};
         }).into()
     } else {
-        quote!({
-            #(#stmts)*
+        quote!(macro_rules! #macro_ident {
+            () => {{
+                #(#stmts)*
+            }};
         }).into()
     }
+}
+
+fn count_bangs(input: TokenStream) -> usize {
+    let mut count = 0;
+
+    for token in input {
+        match token {
+            TokenTree::Punct(punct) => {
+                if punct.as_char() == '!' {
+                    count += 1;
+                }
+            }
+            TokenTree::Group(group) => {
+                count += count_bangs(group.stream());
+            }
+            _ => {}
+        }
+    }
+
+    count
 }
