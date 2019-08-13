@@ -1,13 +1,16 @@
 [package]
 name = "async-stream-impl"
 version = "0.1.0"
-authors = ["Carl Lerche <me@carllerche.com>"]
 edition = "2018"
+license = "MIT"
+authors = ["Carl Lerche <me@carllerche.com>"]
+description = "proc macros for async-stream crate"
+documentation = "https://docs.rs/async-stream-impl/0.1.0/loom"
+homepage = "https://github.com/tokio-rs/async-stream"
+repository = "https://github.com/tokio-rs/async-stream"
 
 [lib]
 proc-macro = true
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 proc-macro2 = "1"
