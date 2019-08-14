@@ -261,9 +261,7 @@ fn replace_for_await(input: TokenStream2) -> TokenStream2 {
         match token {
             TokenTree2::Ident(ident) => {
                 match input.peek() {
-                    Some(TokenTree2::Ident(next))
-                        if ident.to_string().as_str() == "for" && next == "await" =>
-                    {
+                    Some(TokenTree2::Ident(next)) if ident == "for" && next == "await" => {
                         tokens.extend(quote!(#[#next]));
                         let _ = input.next();
                     }
