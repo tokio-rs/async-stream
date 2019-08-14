@@ -103,7 +103,7 @@ impl VisitMut for Scrub {
             syn::Expr::ForLoop(expr) => {
                 syn::visit_mut::visit_expr_for_loop_mut(self, expr);
                 // TODO: Should we allow other attributes?
-                if expr.attrs.len() != 1 || !expr.attrs[0].path.is_ident("for_await") {
+                if expr.attrs.len() != 1 || !expr.attrs[0].path.is_ident("await") {
                     return;
                 }
                 let syn::ExprForLoop {
