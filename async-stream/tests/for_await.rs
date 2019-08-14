@@ -12,8 +12,7 @@ async fn test() {
     };
 
     let s = stream! {
-        #[await]
-        for x in s {
+        for await x in s {
             yield x.to_owned() + "!";
         }
     };
