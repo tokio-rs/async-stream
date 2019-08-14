@@ -98,6 +98,42 @@ impl VisitMut for Scrub {
                 syn::visit_mut::visit_expr_mut(self, i);
                 self.is_xforming = prev;
             }
+            syn::Expr::ForLoop(expr) => {
+                syn::visit_mut::visit_expr_for_loop_mut(self, expr);
+                // TODO: Should we allow other attributes?
+                if expr.attrs.len() != 1 || !expr.attrs[0].path.is_ident("for_await") {
+                    return;
+                }
+                let syn::ExprForLoop {
+                    attrs,
+                    label,
+                    pat,
+                    expr,
+                    body,
+                    ..
+                } = expr;
+
+                let attr = attrs.pop().unwrap();
+                if let Err(e) = syn::parse2::<syn::parse::Nothing>(attr.tokens) {
+                    *i = syn::parse2(e.to_compile_error()).unwrap();
+                    return;
+                }
+
+                *i = syn::parse_quote! {{
+                    let mut __pinned = #expr;
+                    let mut __pinned = unsafe {
+                        ::async_stream::reexport::Pin::new_unchecked(&mut __pinned)
+                    };
+                    #label
+                    loop {
+                        let #pat = match ::async_stream::reexport::next(&mut __pinned).await {
+                            ::async_stream::reexport::Some(e) => e,
+                            ::async_stream::reexport::None => break,
+                        };
+                        #body
+                    }
+                }}
+            }
             _ => syn::visit_mut::visit_expr_mut(self, i),
         }
     }
