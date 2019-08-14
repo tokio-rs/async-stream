@@ -13,12 +13,17 @@ pub struct AsyncStream<T, U> {
 
 impl<T, U> AsyncStream<T, U> {
     pub fn new(rx: Receiver<T>, generator: U) -> AsyncStream<T, U> {
-        AsyncStream { rx, done: false, generator }
+        AsyncStream {
+            rx,
+            done: false,
+            generator,
+        }
     }
 }
 
 impl<T, U> Stream for AsyncStream<T, U>
-where U: Future<Output = ()>
+where
+    U: Future<Output = ()>,
 {
     type Item = T;
 

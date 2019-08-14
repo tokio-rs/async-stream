@@ -21,7 +21,9 @@ struct AsyncStreamEnumHack {
 impl AsyncStreamEnumHack {
     fn parse(input: TokenStream) -> Self {
         macro_rules! n {
-            ($i:ident) => { $i.next().unwrap() };
+            ($i:ident) => {
+                $i.next().unwrap()
+            };
         }
 
         let mut input = input.into_iter();
@@ -46,7 +48,8 @@ impl AsyncStreamEnumHack {
 
         let macro_ident = syn::Ident::new(
             &format!("stream_{}", count_bangs(inner.into())),
-            Span::call_site());
+            Span::call_site(),
+        );
 
         AsyncStreamEnumHack { stmts, macro_ident }
     }
@@ -91,8 +94,7 @@ impl VisitMut for Scrub {
                     }
                 };
             }
-            syn::Expr::Closure(_) |
-                syn::Expr::Async(_) => {
+            syn::Expr::Closure(_) | syn::Expr::Async(_) => {
                 let prev = self.is_xforming;
                 self.is_xforming = false;
                 syn::visit_mut::visit_expr_mut(self, i);
@@ -148,8 +150,10 @@ impl VisitMut for Scrub {
 
 #[proc_macro_derive(AsyncStreamHack)]
 pub fn async_stream_impl(input: TokenStream) -> TokenStream {
-    let AsyncStreamEnumHack { macro_ident, mut stmts } =
-        AsyncStreamEnumHack::parse(input);
+    let AsyncStreamEnumHack {
+        macro_ident,
+        mut stmts,
+    } = AsyncStreamEnumHack::parse(input);
 
     let mut scrub = Scrub {
         is_xforming: true,
@@ -171,20 +175,24 @@ pub fn async_stream_impl(input: TokenStream) -> TokenStream {
 
                 #(#stmts)*
             }};
-        }).into()
+        })
+        .into()
     } else {
         quote!(macro_rules! #macro_ident {
             () => {{
                 #(#stmts)*
             }};
-        }).into()
+        })
+        .into()
     }
 }
 
 #[proc_macro_derive(AsyncTryStreamHack)]
 pub fn async_try_stream_impl(input: TokenStream) -> TokenStream {
-    let AsyncStreamEnumHack { macro_ident, mut stmts } =
-        AsyncStreamEnumHack::parse(input);
+    let AsyncStreamEnumHack {
+        macro_ident,
+        mut stmts,
+    } = AsyncStreamEnumHack::parse(input);
 
     let mut scrub = Scrub {
         is_xforming: true,
@@ -206,13 +214,15 @@ pub fn async_try_stream_impl(input: TokenStream) -> TokenStream {
 
                 #(#stmts)*
             }};
-        }).into()
+        })
+        .into()
     } else {
         quote!(macro_rules! #macro_ident {
             () => {{
                 #(#stmts)*
             }};
-        }).into()
+        })
+        .into()
     }
 }
 

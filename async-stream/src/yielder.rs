@@ -49,17 +49,15 @@ impl<T: Unpin> Future for Send<T> {
             return Poll::Ready(());
         }
 
-        STORE.with(|cell| {
-            unsafe {
-                let ptr = cell.get() as *mut Option<T>;
-                let option_ref = ptr.as_mut().expect("invalid usage");
+        STORE.with(|cell| unsafe {
+            let ptr = cell.get() as *mut Option<T>;
+            let option_ref = ptr.as_mut().expect("invalid usage");
 
-                if option_ref.is_none() {
-                    *option_ref = self.value.take();
-                }
-
-                Poll::Pending
+            if option_ref.is_none() {
+                *option_ref = self.value.take();
             }
+
+            Poll::Pending
         })
     }
 }
