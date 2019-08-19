@@ -169,6 +169,7 @@
 //! [`proc-macro-hack`]: https://github.com/dtolnay/proc-macro-hack/
 
 mod async_stream;
+mod next;
 #[doc(hidden)]
 pub mod yielder;
 
@@ -178,6 +179,16 @@ pub use crate::async_stream::AsyncStream;
 
 #[doc(hidden)]
 pub use async_stream_impl::{AsyncStreamHack, AsyncTryStreamHack};
+
+#[doc(hidden)]
+pub mod reexport {
+    #[doc(hidden)]
+    pub use crate::next::next;
+    #[doc(hidden)]
+    pub use std::option::Option::{None, Some};
+    #[doc(hidden)]
+    pub use std::pin::Pin;
+}
 
 /// Asynchronous stream
 ///

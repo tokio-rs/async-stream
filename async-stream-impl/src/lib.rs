@@ -1,7 +1,7 @@
 extern crate proc_macro;
 
 use proc_macro::{TokenStream, TokenTree};
-use proc_macro2::Span;
+use proc_macro2::{Group, Span, TokenStream as TokenStream2, TokenTree as TokenTree2};
 use quote::quote;
 use syn::visit_mut::VisitMut;
 
@@ -19,7 +19,7 @@ struct AsyncStreamEnumHack {
 }
 
 impl AsyncStreamEnumHack {
-    fn parse(input: TokenStream) -> Self {
+    fn parse(input: TokenStream) -> syn::Result<Self> {
         macro_rules! n {
             ($i:ident) => {
                 $i.next().unwrap()
@@ -44,14 +44,15 @@ impl AsyncStreamEnumHack {
         n!(braces); // !
 
         let inner = n!(braces);
-        let syn::Block { stmts, .. } = syn::parse(inner.clone().into()).unwrap();
+        let inner = replace_for_await(TokenStream2::from(TokenStream::from(inner)));
+        let syn::Block { stmts, .. } = syn::parse2(inner.clone())?;
 
         let macro_ident = syn::Ident::new(
             &format!("stream_{}", count_bangs(inner.into())),
             Span::call_site(),
         );
 
-        AsyncStreamEnumHack { stmts, macro_ident }
+        Ok(AsyncStreamEnumHack { stmts, macro_ident })
     }
 }
 
@@ -100,6 +101,42 @@ impl VisitMut for Scrub {
                 syn::visit_mut::visit_expr_mut(self, i);
                 self.is_xforming = prev;
             }
+            syn::Expr::ForLoop(expr) => {
+                syn::visit_mut::visit_expr_for_loop_mut(self, expr);
+                // TODO: Should we allow other attributes?
+                if expr.attrs.len() != 1 || !expr.attrs[0].path.is_ident("await") {
+                    return;
+                }
+                let syn::ExprForLoop {
+                    attrs,
+                    label,
+                    pat,
+                    expr,
+                    body,
+                    ..
+                } = expr;
+
+                let attr = attrs.pop().unwrap();
+                if let Err(e) = syn::parse2::<syn::parse::Nothing>(attr.tokens) {
+                    *i = syn::parse2(e.to_compile_error()).unwrap();
+                    return;
+                }
+
+                *i = syn::parse_quote! {{
+                    let mut __pinned = #expr;
+                    let mut __pinned = unsafe {
+                        ::async_stream::reexport::Pin::new_unchecked(&mut __pinned)
+                    };
+                    #label
+                    loop {
+                        let #pat = match ::async_stream::reexport::next(&mut __pinned).await {
+                            ::async_stream::reexport::Some(e) => e,
+                            ::async_stream::reexport::None => break,
+                        };
+                        #body
+                    }
+                }}
+            }
             _ => syn::visit_mut::visit_expr_mut(self, i),
         }
     }
@@ -117,7 +154,10 @@ pub fn async_stream_impl(input: TokenStream) -> TokenStream {
     let AsyncStreamEnumHack {
         macro_ident,
         mut stmts,
-    } = AsyncStreamEnumHack::parse(input);
+    } = match AsyncStreamEnumHack::parse(input) {
+        Ok(x) => x,
+        Err(e) => return e.to_compile_error().into(),
+    };
 
     let mut scrub = Scrub {
         is_xforming: true,
@@ -156,7 +196,10 @@ pub fn async_try_stream_impl(input: TokenStream) -> TokenStream {
     let AsyncStreamEnumHack {
         macro_ident,
         mut stmts,
-    } = AsyncStreamEnumHack::parse(input);
+    } = match AsyncStreamEnumHack::parse(input) {
+        Ok(x) => x,
+        Err(e) => return e.to_compile_error().into(),
+    };
 
     let mut scrub = Scrub {
         is_xforming: true,
@@ -208,4 +251,31 @@ fn count_bangs(input: TokenStream) -> usize {
     }
 
     count
+}
+
+fn replace_for_await(input: TokenStream2) -> TokenStream2 {
+    let mut input = input.into_iter().peekable();
+    let mut tokens = Vec::new();
+
+    while let Some(token) = input.next() {
+        match token {
+            TokenTree2::Ident(ident) => {
+                match input.peek() {
+                    Some(TokenTree2::Ident(next)) if ident == "for" && next == "await" => {
+                        tokens.extend(quote!(#[#next]));
+                        let _ = input.next();
+                    }
+                    _ => {}
+                }
+                tokens.push(ident.into());
+            }
+            TokenTree2::Group(group) => {
+                let stream = replace_for_await(group.stream());
+                tokens.push(Group::new(group.delimiter(), stream).into());
+            }
+            _ => tokens.push(token),
+        }
+    }
+
+    tokens.into_iter().collect()
 }
