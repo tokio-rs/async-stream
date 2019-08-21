@@ -1,5 +1,3 @@
-#![feature(async_await)]
-
 use async_stream::stream;
 
 use futures_util::pin_mut;

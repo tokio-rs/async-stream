@@ -4,8 +4,7 @@ Asynchronous stream of elements.
 
 Provides two macros, `stream!` and `try_stream!`, allowing the caller to
 define asynchronous streams of elements. These are implemented using `async`
-& `await` notation. The `stream!` macro works using only
-`#[feature(async_await)]`.
+& `await` notation. The `stream!` macro works without unstable features.
 
 The `stream!` macro returns an anonymous type implementing the [`Stream`]
 trait. The `Item` associated type is the type of the values yielded from the
@@ -20,8 +19,6 @@ A basic stream yielding numbers. Values are yielded using the `yield`
 keyword. The stream block must return `()`.
 
 ```rust
-#![feature(async_await)]
-
 use tokio::prelude::*;
 
 use async_stream::stream;
@@ -46,8 +43,6 @@ async fn main() {
 Streams may be returned by using `impl Stream<Item = T>`:
 
 ```rust
-#![feature(async_await)]
-
 use tokio::prelude::*;
 
 use async_stream::stream;
@@ -75,8 +70,6 @@ async fn main() {
 Streams may be implemented in terms of other streams:
 
 ```rust
-#![feature(async_await)]
-
 use tokio::prelude::*;
 
 use async_stream::stream;
@@ -117,8 +110,6 @@ of the returned stream is `Result` with `Ok` being the value yielded and
 `Err` the error type returned by `?`.
 
 ```rust
-#![feature(async_await)]
-
 use tokio::net::{TcpListener, TcpStream};
 use tokio::prelude::*;
 

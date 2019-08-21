@@ -1,5 +1,3 @@
-#![feature(async_await)]
-
 use async_stream::try_stream;
 
 use tokio::prelude::*;
