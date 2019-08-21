@@ -1,16 +1,16 @@
 error[E0658]: yield syntax is experimental
- --> $DIR/yield_in_async.rs:8:13
+ --> $DIR/yield_in_async.rs:6:13
   |
-8 |             yield 123;
+6 |             yield 123;
   |             ^^^^^^^^^
   |
   = note: for more information, see https://github.com/rust-lang/rust/issues/43122
   = help: add `#![feature(generators)]` to the crate attributes to enable
 
 error[E0727]: `async` generators are not yet supported
- --> $DIR/yield_in_async.rs:8:13
+ --> $DIR/yield_in_async.rs:6:13
   |
-8 |             yield 123;
+6 |             yield 123;
   |             ^^^^^^^^^
 
 For more information about this error, try `rustc --explain E0658`.
