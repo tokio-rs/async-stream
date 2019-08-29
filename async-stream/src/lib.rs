@@ -1,11 +1,8 @@
-#![feature(async_await)]
-
 //! Asynchronous stream of elements.
 //!
 //! Provides two macros, `stream!` and `try_stream!`, allowing the caller to
 //! define asynchronous streams of elements. These are implemented using `async`
-//! & `await` notation. The `stream!` macro works using only
-//! `#[feature(async_await)]`.
+//! & `await` notation. The `stream!` macro works without unstable features.
 //!
 //! The `stream!` macro returns an anonymous type implementing the [`Stream`]
 //! trait. The `Item` associated type is the type of the values yielded from the
@@ -20,8 +17,6 @@
 //! keyword. The stream block must return `()`.
 //!
 //! ```rust
-//! #![feature(async_await)]
-//!
 //! use tokio::prelude::*;
 //!
 //! use async_stream::stream;
@@ -46,8 +41,6 @@
 //! Streams may be returned by using `impl Stream<Item = T>`:
 //!
 //! ```rust
-//! #![feature(async_await)]
-//!
 //! use tokio::prelude::*;
 //!
 //! use async_stream::stream;
@@ -75,8 +68,6 @@
 //! Streams may be implemented in terms of other streams:
 //!
 //! ```rust
-//! #![feature(async_await)]
-//!
 //! use tokio::prelude::*;
 //!
 //! use async_stream::stream;
@@ -117,8 +108,6 @@
 //! `Err` the error type returned by `?`.
 //!
 //! ```rust
-//! #![feature(async_await)]
-//!
 //! use tokio::net::{TcpListener, TcpStream};
 //! use tokio::prelude::*;
 //!
@@ -197,8 +186,6 @@ pub mod reexport {
 /// # Examples
 ///
 /// ```rust
-/// #![feature(async_await)]
-///
 /// use tokio::prelude::*;
 ///
 /// use async_stream::stream;
@@ -241,8 +228,6 @@ macro_rules! stream {
 /// # Examples
 ///
 /// ```rust
-/// #![feature(async_await)]
-///
 /// use tokio::net::{TcpListener, TcpStream};
 /// use tokio::prelude::*;
 ///
