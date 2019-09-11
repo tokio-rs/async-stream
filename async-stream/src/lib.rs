@@ -119,7 +119,7 @@
 //!     -> impl Stream<Item = io::Result<TcpStream>>
 //! {
 //!     try_stream! {
-//!         let mut listener = TcpListener::bind(&addr)?;
+//!         let mut listener = TcpListener::bind(addr).await?;
 //!
 //!         loop {
 //!             let (stream, addr) = listener.accept().await?;
@@ -239,7 +239,7 @@ macro_rules! stream {
 ///     -> impl Stream<Item = io::Result<TcpStream>>
 /// {
 ///     try_stream! {
-///         let mut listener = TcpListener::bind(&addr)?;
+///         let mut listener = TcpListener::bind(addr).await?;
 ///
 ///         loop {
 ///             let (stream, addr) = listener.accept().await?;
