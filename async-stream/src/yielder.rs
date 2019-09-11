@@ -5,10 +5,12 @@ use std::pin::Pin;
 use std::ptr;
 use std::task::{Context, Poll};
 
+#[derive(Debug)]
 pub struct Sender<T> {
     _p: PhantomData<T>,
 }
 
+#[derive(Debug)]
 pub struct Receiver<T> {
     _p: PhantomData<T>,
 }

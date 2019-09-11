@@ -1,3 +1,12 @@
+#![doc(html_root_url = "https://docs.rs/async-stream/0.1.1")]
+#![warn(
+    missing_debug_implementations,
+    missing_docs,
+    rust_2018_idioms,
+    unreachable_pub
+)]
+#![doc(test(no_crate_inject, attr(deny(rust_2018_idioms))))]
+
 //! Asynchronous stream of elements.
 //!
 //! Provides two macros, `stream!` and `try_stream!`, allowing the caller to
