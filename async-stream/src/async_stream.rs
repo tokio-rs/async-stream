@@ -5,6 +5,8 @@ use std::future::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
+#[doc(hidden)]
+#[derive(Debug)]
 pub struct AsyncStream<T, U> {
     rx: Receiver<T>,
     done: bool,
@@ -12,6 +14,7 @@ pub struct AsyncStream<T, U> {
 }
 
 impl<T, U> AsyncStream<T, U> {
+    #[doc(hidden)]
     pub fn new(rx: Receiver<T>, generator: U) -> AsyncStream<T, U> {
         AsyncStream {
             rx,
