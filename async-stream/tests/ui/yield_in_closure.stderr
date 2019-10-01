@@ -12,5 +12,3 @@ error[E0628]: generators cannot have explicit parameters
   |
 6 |             .and_then(|v| {
   |                       ^^^
-
-For more information about this error, try `rustc --explain E0658`.
