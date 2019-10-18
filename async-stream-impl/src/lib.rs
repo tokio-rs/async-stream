@@ -89,7 +89,7 @@ impl VisitMut for Scrub {
                     match #e {
                         Ok(v) => v,
                         Err(e) => {
-                            __yield_tx.send(Err(e)).await;
+                            __yield_tx.send(Err(e.into())).await;
                             return;
                         }
                     }
