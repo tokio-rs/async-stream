@@ -1,6 +1,6 @@
 use crate::yielder::Receiver;
 
-use futures_core::Stream;
+use futures_core::{FusedStream, Stream};
 use std::future::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll};
@@ -24,6 +24,15 @@ impl<T, U> AsyncStream<T, U> {
     }
 }
 
+impl<T, U> FusedStream for AsyncStream<T, U>
+where
+    U: Future<Output = ()>,
+{
+    fn is_terminated(&self) -> bool {
+        self.done
+    }
+}
+
 impl<T, U> Stream for AsyncStream<T, U>
 where
     U: Future<Output = ()>,
@@ -35,7 +44,7 @@ where
             let me = Pin::get_unchecked_mut(self);
 
             if me.done {
-                panic!("poll after done");
+                return Poll::Ready(None);
             }
 
             let mut dst = None;

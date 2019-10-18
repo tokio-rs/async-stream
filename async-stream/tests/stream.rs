@@ -1,5 +1,6 @@
 use async_stream::stream;
 
+use futures_core::stream::FusedStream;
 use futures_util::pin_mut;
 use tokio::prelude::*;
 use tokio::sync::mpsc;
@@ -45,6 +46,22 @@ async fn yield_single_value() {
 
     assert_eq!(1, values.len());
     assert_eq!("hello", values[0]);
+}
+
+#[tokio::test]
+async fn fused() {
+    let s = stream! {
+        yield "hello";
+    };
+    pin_mut!(s);
+
+    assert!(!s.is_terminated());
+    assert_eq!(s.next().await, Some("hello"));
+    assert_eq!(s.next().await, None);
+
+    assert!(s.is_terminated());
+    // This should return None from now on
+    assert_eq!(s.next().await, None);
 }
 
 #[tokio::test]
