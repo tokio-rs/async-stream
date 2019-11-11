@@ -5,21 +5,9 @@ error[E0658]: yield syntax is experimental
   |                 ^^^^^^^
   |
   = note: for more information, see https://github.com/rust-lang/rust/issues/43122
-  = help: add `#![feature(generators)]` to the crate attributes to enable
 
 error[E0628]: generators cannot have explicit parameters
  --> $DIR/yield_in_closure.rs:6:23
   |
 6 |             .and_then(|v| {
   |                       ^^^
-
-error[E0277]: expected a `std::ops::FnOnce<(&str,)>` closure, found `[generator@$DIR/tests/ui/yield_in_closure.rs:6:23: 8:51 _]`
- --> $DIR/yield_in_closure.rs:6:14
-  |
-6 |             .and_then(|v| {
-  |              ^^^^^^^^ expected an `FnOnce<(&str,)>` closure, found `[generator@$DIR/tests/ui/yield_in_closure.rs:6:23: 8:51 _]`
-  |
-  = help: the trait `std::ops::FnOnce<(&str,)>` is not implemented for `[generator@$DIR/tests/ui/yield_in_closure.rs:6:23: 8:51 _]`
-
-Some errors have detailed explanations: E0277, E0658.
-For more information about an error, try `rustc --explain E0277`.
