@@ -166,7 +166,7 @@
 //!
 //! A `stream!` macro may only contain up to 64 macro invocations.
 //!
-//! [`Stream`]: https://docs.rs/futures-core-preview/*/futures_core/stream/trait.Stream.html
+//! [`Stream`]: https://docs.rs/futures-core/*/futures_core/stream/trait.Stream.html
 //! [`proc-macro-hack`]: https://github.com/dtolnay/proc-macro-hack/
 
 mod async_stream;
