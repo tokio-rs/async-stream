@@ -5,14 +5,8 @@ jobs:
     vmImage: ubuntu-16.04
   strategy:
     matrix:
-      # TODO: Enable when possible
-      #
-      # stable:
-      #   rust_version: stable
-      # beta:
-      #   rust_version: beta
-      nightly:
-        rust_version: nightly
+      stable:
+        rust_version: stable
   steps:
 
   - template: azure-install-rust.yml
