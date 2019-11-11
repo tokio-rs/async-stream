@@ -182,10 +182,6 @@ pub use async_stream_impl::{AsyncStreamHack, AsyncTryStreamHack};
 pub mod reexport {
     #[doc(hidden)]
     pub use crate::next::next;
-    #[doc(hidden)]
-    pub use std::option::Option::{None, Some};
-    #[doc(hidden)]
-    pub use std::pin::Pin;
 }
 
 /// Asynchronous stream

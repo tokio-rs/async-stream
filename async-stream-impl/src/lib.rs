@@ -125,13 +125,13 @@ impl VisitMut for Scrub {
                 *i = syn::parse_quote! {{
                     let mut __pinned = #expr;
                     let mut __pinned = unsafe {
-                        ::async_stream::reexport::Pin::new_unchecked(&mut __pinned)
+                        ::core::pin::Pin::new_unchecked(&mut __pinned)
                     };
                     #label
                     loop {
                         let #pat = match ::async_stream::reexport::next(&mut __pinned).await {
-                            ::async_stream::reexport::Some(e) => e,
-                            ::async_stream::reexport::None => break,
+                            ::core::option::Option::Some(e) => e,
+                            ::core::option::Option::None => break,
                         };
                         #body
                     }
