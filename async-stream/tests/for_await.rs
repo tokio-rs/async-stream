@@ -1,6 +1,6 @@
-use tokio::prelude::*;
-
 use async_stream::stream;
+
+use futures_util::stream::StreamExt;
 
 #[tokio::test]
 async fn test() {

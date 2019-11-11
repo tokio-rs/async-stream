@@ -1,8 +1,8 @@
 use async_stream::stream;
 
-use futures_core::stream::FusedStream;
+use futures_core::stream::{FusedStream, Stream};
 use futures_util::pin_mut;
-use tokio::prelude::*;
+use futures_util::stream::StreamExt;
 use tokio::sync::mpsc;
 use tokio_test::assert_ok;
 
