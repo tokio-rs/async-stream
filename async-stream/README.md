@@ -19,10 +19,10 @@ A basic stream yielding numbers. Values are yielded using the `yield`
 keyword. The stream block must return `()`.
 
 ```rust
-use tokio::prelude::*;
-
 use async_stream::stream;
+
 use futures_util::pin_mut;
+use futures_util::stream::StreamExt;
 
 #[tokio::main]
 async fn main() {
@@ -43,10 +43,11 @@ async fn main() {
 Streams may be returned by using `impl Stream<Item = T>`:
 
 ```rust
-use tokio::prelude::*;
-
 use async_stream::stream;
+
+use futures_core::stream::Stream;
 use futures_util::pin_mut;
+use futures_util::stream::StreamExt;
 
 fn zero_to_three() -> impl Stream<Item = u32> {
     stream! {
@@ -70,10 +71,11 @@ async fn main() {
 Streams may be implemented in terms of other streams:
 
 ```rust
-use tokio::prelude::*;
-
 use async_stream::stream;
+
+use futures_core::stream::Stream;
 use futures_util::pin_mut;
+use futures_util::stream::StreamExt;
 
 fn zero_to_three() -> impl Stream<Item = u32> {
     stream! {
@@ -111,9 +113,10 @@ of the returned stream is `Result` with `Ok` being the value yielded and
 
 ```rust
 use tokio::net::{TcpListener, TcpStream};
-use tokio::prelude::*;
 
 use async_stream::try_stream;
+use futures_core::stream::Stream;
+
 use std::io;
 use std::net::SocketAddr;
 
@@ -156,7 +159,7 @@ If large `stream!` blocks are used, the caller will be required to add
 
 A `stream!` macro may only contain up to 64 macro invocations.
 
-[`Stream`]: https://docs.rs/futures-core-preview/*/futures_core/stream/trait.Stream.html
+[`Stream`]: https://docs.rs/futures-core/*/futures_core/stream/trait.Stream.html
 [`proc-macro-hack`]: https://github.com/dtolnay/proc-macro-hack/
 
 ## License

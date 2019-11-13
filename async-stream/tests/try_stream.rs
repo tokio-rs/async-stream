@@ -1,6 +1,7 @@
 use async_stream::try_stream;
 
-use tokio::prelude::*;
+use futures_core::stream::Stream;
+use futures_util::stream::StreamExt;
 
 #[tokio::test]
 async fn single_err() {
