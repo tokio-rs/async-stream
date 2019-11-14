@@ -1,4 +1,4 @@
-#![doc(html_root_url = "https://docs.rs/async-stream/0.1.2")]
+#![doc(html_root_url = "https://docs.rs/async-stream/0.2.0")]
 #![warn(
     missing_debug_implementations,
     missing_docs,
