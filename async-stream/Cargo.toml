@@ -21,10 +21,10 @@ readme = "README.md"
 
 [dependencies]
 async-stream-impl = { version = "0.2.0", path = "../async-stream-impl" }
-futures-core = "0.3.0"
+futures-core = "0.3"
 
 [dev-dependencies]
-tokio = "=0.2.0-alpha.6"
-tokio-test = "=0.2.0-alpha.6"
-futures-util = "0.3.0"
-trybuild = "1.0"
+futures-util = "0.3"
+tokio = { version = "0.2", features = ["full"] }
+tokio-test = "0.2"
+trybuild = "1"
