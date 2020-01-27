@@ -60,3 +60,21 @@ async fn convert_err() {
     assert_eq!(1, values.len());
     assert_eq!(Err(ErrorB(1)), values[0]);
 }
+
+#[tokio::test]
+async fn multi_try() {
+    fn test() -> impl Stream<Item = Result<i32, String>> {
+        try_stream! {
+            let a = Ok::<_,  String>(Ok::<_,  String>(123))??;
+            for _ in (1..10) {
+                yield a;
+            }
+        }
+    }
+    let values: Vec<_> = test().collect().await;
+    assert_eq!(9, values.len());
+    assert_eq!(
+        std::iter::repeat(123).take(9).map(Ok).collect::<Vec<_>>(),
+        values
+    );
+}
