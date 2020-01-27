@@ -82,6 +82,7 @@ impl VisitMut for Scrub {
                 };
             }
             syn::Expr::Try(try_expr) => {
+                syn::visit_mut::visit_expr_try_mut(self, try_expr);
                 // let ident = &self.yielder;
                 let e = &try_expr.expr;
 
