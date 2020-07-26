@@ -6,13 +6,13 @@ error[E0658]: yield syntax is experimental
   |
   = note: see issue #43122 <https://github.com/rust-lang/rust/issues/43122> for more information
 
-error[E0277]: expected a `std::ops::FnOnce<(&str,)>` closure, found `[generator@$DIR/src/lib.rs:222:13: 222:52 _]`
+error[E0277]: expected a `std::ops::FnOnce<(&str,)>` closure, found `[generator@$DIR/tests/ui/yield_in_closure.rs:4:5: 10:7 _]`
  --> $DIR/yield_in_closure.rs:6:14
   |
 6 |             .and_then(|v| {
-  |              ^^^^^^^^ expected an `FnOnce<(&str,)>` closure, found `[generator@$DIR/src/lib.rs:222:13: 222:52 _]`
+  |              ^^^^^^^^ expected an `FnOnce<(&str,)>` closure, found `[generator@$DIR/tests/ui/yield_in_closure.rs:4:5: 10:7 _]`
   |
-  = help: the trait `std::ops::FnOnce<(&str,)>` is not implemented for `[generator@$DIR/src/lib.rs:222:13: 222:52 _]`
+  = help: the trait `std::ops::FnOnce<(&str,)>` is not implemented for `[generator@$DIR/tests/ui/yield_in_closure.rs:4:5: 10:7 _]`
 
 Some errors have detailed explanations: E0277, E0658.
 For more information about an error, try `rustc --explain E0277`.
