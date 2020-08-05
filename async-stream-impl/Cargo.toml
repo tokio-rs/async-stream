@@ -16,3 +16,9 @@ proc-macro = true
 proc-macro2 = "1"
 syn = { version = "1", features = ["extra-traits", "full", "visit-mut"]}
 quote = "1"
+
+[dev-dependencies]
+async-stream = { version = "0.2.1", path = "../async-stream" }
+futures-core = "0.3"
+futures-util = "0.3"
+tokio = { version = "0.2", features = ["full"] }

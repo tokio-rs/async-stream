@@ -150,17 +150,7 @@ stored on the stack. A pointer to the cell is stored in a thread local and
 `sender.send(value)` stores the value that cell and yields back to the
 caller.
 
-## Limitations
-
-`async-stream` suffers from the same limitations as the [`proc-macro-hack`]
-crate. Primarily, nesting support must be implemented using a `TT-muncher`.
-If large `stream!` blocks are used, the caller will be required to add
-`#![recursion_limit = "..."]` to their crate.
-
-A `stream!` macro may only contain up to 64 macro invocations.
-
 [`stream`]: https://docs.rs/futures-core/*/futures_core/stream/trait.Stream.html
-[`proc-macro-hack`]: https://github.com/dtolnay/proc-macro-hack/
 
 ## License
 

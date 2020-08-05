@@ -1,7 +1,5 @@
-extern crate proc_macro;
-
-use proc_macro::{TokenStream, TokenTree};
-use proc_macro2::{Group, Span, TokenStream as TokenStream2, TokenTree as TokenTree2};
+use proc_macro::TokenStream;
+use proc_macro2::{Delimiter, Group, TokenStream as TokenStream2, TokenTree};
 use quote::quote;
 use syn::visit_mut::VisitMut;
 
@@ -12,48 +10,14 @@ struct Scrub {
     num_yield: u32,
 }
 
-#[derive(Debug)]
-struct AsyncStreamEnumHack {
-    macro_ident: syn::Ident,
-    stmts: Vec<syn::Stmt>,
-}
+fn parse_input(input: TokenStream) -> syn::Result<Vec<syn::Stmt>> {
+    let input = replace_for_await(input.into());
+    // syn does not provide a way to parse `Vec<Stmt>` directly from `TokenStream`,
+    // so wrap input in a brace and then parse it as a block.
+    let input = TokenStream2::from(TokenTree::Group(Group::new(Delimiter::Brace, input)));
+    let syn::Block { stmts, .. } = syn::parse2(input)?;
 
-impl AsyncStreamEnumHack {
-    fn parse(input: TokenStream) -> syn::Result<Self> {
-        macro_rules! n {
-            ($i:ident) => {
-                $i.next().unwrap()
-            };
-        }
-
-        let mut input = input.into_iter();
-        n!(input); // enum
-        n!(input); // ident
-
-        let mut braces = match n!(input) {
-            TokenTree::Group(group) => group.stream().into_iter(),
-            _ => unreachable!(),
-        };
-
-        n!(braces); // Dummy
-        n!(braces); // =
-        n!(braces); // $crate
-        n!(braces); // :
-        n!(braces); // :
-        n!(braces); // scrub
-        n!(braces); // !
-
-        let inner = n!(braces);
-        let inner = replace_for_await(TokenStream2::from(TokenStream::from(inner)));
-        let syn::Block { stmts, .. } = syn::parse2(inner.clone())?;
-
-        let macro_ident = syn::Ident::new(
-            &format!("stream_{}", count_bangs(inner.into())),
-            Span::call_site(),
-        );
-
-        Ok(AsyncStreamEnumHack { stmts, macro_ident })
-    }
+    Ok(stmts)
 }
 
 impl VisitMut for Scrub {
@@ -150,12 +114,36 @@ impl VisitMut for Scrub {
     }
 }
 
-#[proc_macro_derive(AsyncStreamHack)]
-pub fn async_stream_impl(input: TokenStream) -> TokenStream {
-    let AsyncStreamEnumHack {
-        macro_ident,
-        mut stmts,
-    } = match AsyncStreamEnumHack::parse(input) {
+/// Asynchronous stream
+///
+/// See [crate](index.html) documentation for more details.
+///
+/// # Examples
+///
+/// ```rust
+/// use async_stream::stream;
+///
+/// use futures_util::pin_mut;
+/// use futures_util::stream::StreamExt;
+///
+/// #[tokio::main]
+/// async fn main() {
+///     let s = stream! {
+///         for i in 0..3 {
+///             yield i;
+///         }
+///     };
+///
+///     pin_mut!(s); // needed for iteration
+///
+///     while let Some(value) = s.next().await {
+///         println!("got {}", value);
+///     }
+/// }
+/// ```
+#[proc_macro]
+pub fn stream(input: TokenStream) -> TokenStream {
+    let mut stmts = match parse_input(input) {
         Ok(x) => x,
         Err(e) => return e.to_compile_error().into(),
     };
@@ -171,33 +159,56 @@ pub fn async_stream_impl(input: TokenStream) -> TokenStream {
         scrub.visit_stmt_mut(&mut stmt);
     }
 
-    if scrub.num_yield == 0 {
-        quote!(macro_rules! #macro_ident {
-            () => {{
-                if false {
-                    __yield_tx.send(()).await;
-                }
-
-                #(#stmts)*
-            }};
-        })
-        .into()
+    let dummy_yield = if scrub.num_yield == 0 {
+        Some(quote!(if false {
+            __yield_tx.send(()).await;
+        }))
     } else {
-        quote!(macro_rules! #macro_ident {
-            () => {{
-                #(#stmts)*
-            }};
+        None
+    };
+
+    quote!({
+        let (mut __yield_tx, __yield_rx) = ::async_stream::yielder::pair();
+        ::async_stream::AsyncStream::new(__yield_rx, async move {
+            #dummy_yield
+            #(#stmts)*
         })
-        .into()
-    }
+    })
+    .into()
 }
 
-#[proc_macro_derive(AsyncTryStreamHack)]
-pub fn async_try_stream_impl(input: TokenStream) -> TokenStream {
-    let AsyncStreamEnumHack {
-        macro_ident,
-        mut stmts,
-    } = match AsyncStreamEnumHack::parse(input) {
+/// Asynchronous fallible stream
+///
+/// See [crate](index.html) documentation for more details.
+///
+/// # Examples
+///
+/// ```rust
+/// use tokio::net::{TcpListener, TcpStream};
+///
+/// use async_stream::try_stream;
+/// use futures_core::stream::Stream;
+///
+/// use std::io;
+/// use std::net::SocketAddr;
+///
+/// fn bind_and_accept(addr: SocketAddr)
+///     -> impl Stream<Item = io::Result<TcpStream>>
+/// {
+///     try_stream! {
+///         let mut listener = TcpListener::bind(addr).await?;
+///
+///         loop {
+///             let (stream, addr) = listener.accept().await?;
+///             println!("received on {:?}", addr);
+///             yield stream;
+///         }
+///     }
+/// }
+/// ```
+#[proc_macro]
+pub fn try_stream(input: TokenStream) -> TokenStream {
+    let mut stmts = match parse_input(input) {
         Ok(x) => x,
         Err(e) => return e.to_compile_error().into(),
     };
@@ -213,45 +224,22 @@ pub fn async_try_stream_impl(input: TokenStream) -> TokenStream {
         scrub.visit_stmt_mut(&mut stmt);
     }
 
-    if scrub.num_yield == 0 {
-        quote!(macro_rules! #macro_ident {
-            () => {{
-                if false {
-                    __yield_tx.send(()).await;
-                }
-
-                #(#stmts)*
-            }};
-        })
-        .into()
+    let dummy_yield = if scrub.num_yield == 0 {
+        Some(quote!(if false {
+            __yield_tx.send(()).await;
+        }))
     } else {
-        quote!(macro_rules! #macro_ident {
-            () => {{
-                #(#stmts)*
-            }};
+        None
+    };
+
+    quote!({
+        let (mut __yield_tx, __yield_rx) = ::async_stream::yielder::pair();
+        ::async_stream::AsyncStream::new(__yield_rx, async move {
+            #dummy_yield
+            #(#stmts)*
         })
-        .into()
-    }
-}
-
-fn count_bangs(input: TokenStream) -> usize {
-    let mut count = 0;
-
-    for token in input {
-        match token {
-            TokenTree::Punct(punct) => {
-                if punct.as_char() == '!' {
-                    count += 1;
-                }
-            }
-            TokenTree::Group(group) => {
-                count += count_bangs(group.stream());
-            }
-            _ => {}
-        }
-    }
-
-    count
+    })
+    .into()
 }
 
 fn replace_for_await(input: TokenStream2) -> TokenStream2 {
@@ -260,9 +248,9 @@ fn replace_for_await(input: TokenStream2) -> TokenStream2 {
 
     while let Some(token) = input.next() {
         match token {
-            TokenTree2::Ident(ident) => {
+            TokenTree::Ident(ident) => {
                 match input.peek() {
-                    Some(TokenTree2::Ident(next)) if ident == "for" && next == "await" => {
+                    Some(TokenTree::Ident(next)) if ident == "for" && next == "await" => {
                         tokens.extend(quote!(#[#next]));
                         let _ = input.next();
                     }
@@ -270,7 +258,7 @@ fn replace_for_await(input: TokenStream2) -> TokenStream2 {
                 }
                 tokens.push(ident.into());
             }
-            TokenTree2::Group(group) => {
+            TokenTree::Group(group) => {
                 let stream = replace_for_await(group.stream());
                 tokens.push(Group::new(group.delimiter(), stream).into());
             }
