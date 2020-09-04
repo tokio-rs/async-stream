@@ -11,7 +11,7 @@
 //!
 //! Provides two macros, `stream!` and `try_stream!`, allowing the caller to
 //! define asynchronous streams of elements. These are implemented using `async`
-//! & `await` notation. The `stream!` macro works without unstable features.
+//! & `await` notation. This crate works without unstable features.
 //!
 //! The `stream!` macro returns an anonymous type implementing the [`Stream`]
 //! trait. The `Item` associated type is the type of the values yielded from the
