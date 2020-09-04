@@ -138,9 +138,7 @@ fn bind_and_accept(addr: SocketAddr)
 ## Implementation
 
 The `stream!` and `try_stream!` macros are implemented using proc macros.
-Given that proc macros in expression position are not supported on stable
-rust, a hack similar to the one provided by the [`proc-macro-hack`] crate is
-used. The macro searches the syntax tree for instances of `sender.send($expr)` and
+The macro searches the syntax tree for instances of `sender.send($expr)` and
 transforms them into `sender.send($expr).await`.
 
 The stream uses a lightweight sender to send values from the stream
