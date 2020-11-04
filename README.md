@@ -32,7 +32,9 @@ async fn main() {
         }
     };
 
-    pin_mut!(s); // needed for iteration
+    // Stream must be pinned before iteration. It can be done with Box::pin,
+    // but the pin_mut macro is more efficient. See "Pinning" section.
+    pin_mut!(s);
 
     while let Some(value) = s.next().await {
         println!("got {}", value);
@@ -60,7 +62,7 @@ fn zero_to_three() -> impl Stream<Item = u32> {
 #[tokio::main]
 async fn main() {
     let s = zero_to_three();
-    pin_mut!(s); // needed for iteration
+    pin_mut!(s); // Pinning is needed for iteration
 
     while let Some(value) = s.next().await {
         println!("got {}", value);
@@ -99,7 +101,7 @@ fn double<S: Stream<Item = u32>>(input: S)
 #[tokio::main]
 async fn main() {
     let s = double(zero_to_three());
-    pin_mut!(s); // needed for iteration
+    pin_mut!(s); // Pinning is needed for iteration
 
     while let Some(value) = s.next().await {
         println!("got {}", value);
@@ -132,6 +134,20 @@ fn bind_and_accept(addr: SocketAddr)
             yield stream;
         }
     }
+}
+```
+
+## Pinning
+
+If you wrap the stream in `Box::pin`, the callers won't need to pin it before iterating it. This is more convenient for the callers, but adds a cost of using dynamic dispatch.
+
+```rust
+fn zero_to_three() -> impl Stream<Item = u32> {
+    Box::pin(stream! {
+        for i in 0..3 {
+            yield i;
+        }
+    })
 }
 ```
 
