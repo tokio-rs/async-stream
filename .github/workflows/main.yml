@@ -1,6 +1,10 @@
 on: [push, pull_request]
 
-name: Continuous integration
+name: CI
+
+env:
+  RUSTFLAGS: -Dwarnings
+  RUST_BACKTRACE: 1
 
 jobs:
   check:
