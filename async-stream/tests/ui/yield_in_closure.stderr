@@ -13,3 +13,6 @@ error[E0277]: expected a `FnOnce<(&str,)>` closure, found `[generator@$DIR/src/l
   |              ^^^^^^^^ expected an `FnOnce<(&str,)>` closure, found `[generator@$DIR/src/lib.rs:202:9: 202:67 _]`
   |
   = help: the trait `FnOnce<(&str,)>` is not implemented for `[generator@$DIR/src/lib.rs:202:9: 202:67 _]`
+
+Some errors have detailed explanations: E0277, E0658.
+For more information about an error, try `rustc --explain E0277`.

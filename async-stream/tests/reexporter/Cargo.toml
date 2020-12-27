@@ -1,0 +1,9 @@
+[package]
+name = "reexporter"
+version = "0.0.0"
+authors = []
+edition = "2018"
+publish = false
+
+[dependencies]
+async-stream = { path = "../.." }
