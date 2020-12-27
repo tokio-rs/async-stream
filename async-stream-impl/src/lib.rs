@@ -1,41 +1,38 @@
 use proc_macro::TokenStream;
-use proc_macro2::{Delimiter, Group, TokenStream as TokenStream2, TokenTree};
+use proc_macro2::{Group, TokenStream as TokenStream2, TokenTree};
 use quote::quote;
 use syn::visit_mut::VisitMut;
 
 struct Scrub {
-    is_xforming: bool,
+    /// Whether the stream is a try stream.
     is_try: bool,
+    /// The unit expression, `()`.
     unit: Box<syn::Expr>,
-    num_yield: u32,
+    has_yielded: bool,
 }
 
 fn parse_input(input: TokenStream) -> syn::Result<Vec<syn::Stmt>> {
     let input = replace_for_await(input.into());
-    // syn does not provide a way to parse `Vec<Stmt>` directly from `TokenStream`,
-    // so wrap input in a brace and then parse it as a block.
-    let input = TokenStream2::from(TokenTree::Group(Group::new(Delimiter::Brace, input)));
-    let syn::Block { stmts, .. } = syn::parse2(input)?;
+    Ok(syn::parse::Parser::parse2(syn::Block::parse_within, input)?)
+}
 
-    Ok(stmts)
+impl Scrub {
+    fn new(is_try: bool) -> Self {
+        Self {
+            is_try,
+            unit: syn::parse_quote!(()),
+            has_yielded: false,
+        }
+    }
 }
 
 impl VisitMut for Scrub {
     fn visit_expr_mut(&mut self, i: &mut syn::Expr) {
-        if !self.is_xforming {
-            syn::visit_mut::visit_expr_mut(self, i);
-            return;
-        }
-
         match i {
             syn::Expr::Yield(yield_expr) => {
-                self.num_yield += 1;
+                self.has_yielded = true;
 
-                let value_expr = if let Some(ref e) = yield_expr.expr {
-                    e
-                } else {
-                    &self.unit
-                };
+                let value_expr = yield_expr.expr.as_ref().unwrap_or(&self.unit);
 
                 // let ident = &self.yielder;
 
@@ -61,10 +58,7 @@ impl VisitMut for Scrub {
                 };
             }
             syn::Expr::Closure(_) | syn::Expr::Async(_) => {
-                let prev = self.is_xforming;
-                self.is_xforming = false;
-                syn::visit_mut::visit_expr_mut(self, i);
-                self.is_xforming = prev;
+                // Don't transform inner closures or async blocks.
             }
             syn::Expr::ForLoop(expr) => {
                 syn::visit_mut::visit_expr_for_loop_mut(self, expr);
@@ -106,11 +100,8 @@ impl VisitMut for Scrub {
         }
     }
 
-    fn visit_item_mut(&mut self, i: &mut syn::Item) {
-        let prev = self.is_xforming;
-        self.is_xforming = false;
-        syn::visit_mut::visit_item_mut(self, i);
-        self.is_xforming = prev;
+    fn visit_item_mut(&mut self, _: &mut syn::Item) {
+        // Don't transform inner items.
     }
 }
 
@@ -148,23 +139,18 @@ pub fn stream(input: TokenStream) -> TokenStream {
         Err(e) => return e.to_compile_error().into(),
     };
 
-    let mut scrub = Scrub {
-        is_xforming: true,
-        is_try: false,
-        unit: syn::parse_quote!(()),
-        num_yield: 0,
-    };
+    let mut scrub = Scrub::new(false);
 
     for mut stmt in &mut stmts[..] {
         scrub.visit_stmt_mut(&mut stmt);
     }
 
-    let dummy_yield = if scrub.num_yield == 0 {
+    let dummy_yield = if scrub.has_yielded {
+        None
+    } else {
         Some(quote!(if false {
             __yield_tx.send(()).await;
         }))
-    } else {
-        None
     };
 
     quote!({
@@ -213,23 +199,18 @@ pub fn try_stream(input: TokenStream) -> TokenStream {
         Err(e) => return e.to_compile_error().into(),
     };
 
-    let mut scrub = Scrub {
-        is_xforming: true,
-        is_try: true,
-        unit: syn::parse_quote!(()),
-        num_yield: 0,
-    };
+    let mut scrub = Scrub::new(true);
 
     for mut stmt in &mut stmts[..] {
         scrub.visit_stmt_mut(&mut stmt);
     }
 
-    let dummy_yield = if scrub.num_yield == 0 {
+    let dummy_yield = if scrub.has_yielded {
+        None
+    } else {
         Some(quote!(if false {
             __yield_tx.send(()).await;
         }))
-    } else {
-        None
     };
 
     quote!({
