@@ -75,7 +75,8 @@
 //! }
 //! ```
 //!
-//! Streams may be implemented in terms of other streams:
+//! Streams may be implemented in terms of other streams - `async-stream` provides `for await`
+//! syntax to assist with this:
 //!
 //! ```rust
 //! use async_stream::stream;
@@ -96,8 +97,7 @@
 //!     -> impl Stream<Item = u32>
 //! {
 //!     stream! {
-//!         pin_mut!(input);
-//!         while let Some(value) = input.next().await {
+//!         for await value in input {
 //!             yield value * 2;
 //!         }
 //!     }
