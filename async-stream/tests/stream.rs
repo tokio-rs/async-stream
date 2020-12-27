@@ -101,7 +101,7 @@ async fn return_stream() {
 
 #[tokio::test]
 async fn consume_channel() {
-    let (mut tx, mut rx) = mpsc::channel(10);
+    let (tx, mut rx) = mpsc::channel(10);
 
     let s = stream! {
         while let Some(v) = rx.recv().await {

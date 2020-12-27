@@ -5,7 +5,7 @@ edition = "2018"
 license = "MIT"
 authors = ["Carl Lerche <me@carllerche.com>"]
 description = "proc macros for async-stream crate"
-documentation = "https://docs.rs/async-stream-impl/0.3.0/async-stream-impl"
+documentation = "https://docs.rs/async-stream-impl/0.3.0/async_stream_impl"
 homepage = "https://github.com/tokio-rs/async-stream"
 repository = "https://github.com/tokio-rs/async-stream"
 
@@ -21,4 +21,4 @@ quote = "1"
 async-stream = { version = "0.3.0", path = "../async-stream" }
 futures-core = "0.3"
 futures-util = "0.3"
-tokio = { version = "0.3", features = ["full"] }
+tokio = { version = "1", features = ["full"] }
