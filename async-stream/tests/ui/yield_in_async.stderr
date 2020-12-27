@@ -12,7 +12,7 @@ error[E0727]: `async` generators are not yet supported
 6 |             yield 123;
   |             ^^^^^^^^^
 
-error[E0271]: type mismatch resolving `<[static generator@$DIR/tests/ui/yield_in_async.rs:4:5: 10:7 _] as Generator<ResumeTy>>::Yield == ()`
+error[E0271]: type mismatch resolving `<[static generator@$DIR/src/lib.rs:212:9: 212:67 _] as Generator<ResumeTy>>::Yield == ()`
   --> $DIR/yield_in_async.rs:4:5
    |
 4  | /     stream! {
@@ -28,6 +28,8 @@ error[E0271]: type mismatch resolving `<[static generator@$DIR/tests/ui/yield_in
    |
    |       T: Generator<ResumeTy, Yield = ()>,
    |                              ---------- required by this bound in `from_generator`
+   |
+   = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0698]: type inside `async` block must be known in this context
  --> $DIR/yield_in_async.rs:6:19
