@@ -23,6 +23,8 @@ error[E0271]: type mismatch resolving `<[static generator@$DIR/src/lib.rs:202:9:
 9  | |         let v = f.await;
 10 | |     };
    | |______^ expected `()`, found integer
+   |
+   = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0698]: type inside `async` block must be known in this context
  --> $DIR/yield_in_async.rs:6:19
@@ -71,6 +73,3 @@ note: the type is part of the `async` block because of this `await`
   |
 9 |         let v = f.await;
   |                 ^^^^^^^
-
-Some errors have detailed explanations: E0271, E0658, E0698, E0727.
-For more information about an error, try `rustc --explain E0271`.
