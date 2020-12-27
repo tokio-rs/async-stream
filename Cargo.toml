@@ -2,4 +2,6 @@
 members = [
     "async-stream",
     "async-stream-impl",
+    "async-stream/tests/reexporter",
+    "async-stream/tests/test-reexport",
 ]
