@@ -6,6 +6,7 @@
     unreachable_pub
 )]
 #![doc(test(no_crate_inject, attr(deny(rust_2018_idioms))))]
+#![no_std]
 
 //! Asynchronous stream of elements.
 //!
@@ -159,8 +160,6 @@
 
 mod async_stream;
 mod next;
-#[doc(hidden)]
-pub mod yielder;
 
 // Used by the macro, but not intended to be accessed publicly.
 #[doc(hidden)]

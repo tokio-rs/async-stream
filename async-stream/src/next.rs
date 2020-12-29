@@ -1,7 +1,7 @@
+use core::future::Future;
+use core::pin::Pin;
+use core::task::{Context, Poll};
 use futures_core::Stream;
-use std::future::Future;
-use std::pin::Pin;
-use std::task::{Context, Poll};
 
 // This is equivalent to the `futures::StreamExt::next` method.
 // But we want to make this crate dependency as small as possible, so we define our `next` function.

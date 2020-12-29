@@ -139,8 +139,7 @@ pub fn stream_inner(input: TokenStream) -> TokenStream {
     };
 
     quote!({
-        let (mut __yield_tx, __yield_rx) = #crate_path::yielder::pair();
-        #crate_path::AsyncStream::new(__yield_rx, async move {
+        #crate_path::AsyncStream::new(move |mut __yield_tx| async move {
             #dummy_yield
             #(#stmts)*
         })
@@ -173,8 +172,7 @@ pub fn try_stream_inner(input: TokenStream) -> TokenStream {
     };
 
     quote!({
-        let (mut __yield_tx, __yield_rx) = #crate_path::yielder::pair();
-        #crate_path::AsyncStream::new(__yield_rx, async move {
+        #crate_path::AsyncStream::new(move |mut __yield_tx| async move {
             #dummy_yield
             #(#stmts)*
         })
