@@ -150,6 +150,9 @@ caller.
 
 [`Stream`]: https://docs.rs/futures-core/*/futures_core/stream/trait.Stream.html
 
+## Supported Rust Versions
+`async-stream` is built against the latest stable release. The minimum supported version is 1.45 due to [function-like procedural macros.. in expression, pattern, and statement positions](https://github.com/rust-lang/rust/blob/master/RELEASES.md#version-1450-2020-07-16).
+
 ## License
 
 This project is licensed under the [MIT license](LICENSE).
