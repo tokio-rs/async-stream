@@ -158,6 +158,20 @@ async fn stream_in_stream() {
     assert_eq!(3, values.len());
 }
 
+#[tokio::test]
+async fn yield_non_unpin_value() {
+    let s: Vec<_> = stream! {
+        for i in 0..3 {
+            yield async move { i };
+        }
+    }
+    .buffered(1)
+    .collect()
+    .await;
+
+    assert_eq!(s, vec![0, 1, 2]);
+}
+
 #[test]
 fn test() {
     let t = trybuild::TestCases::new();
