@@ -164,7 +164,7 @@ pub mod yielder;
 
 // Used by the macro, but not intended to be accessed publicly.
 #[doc(hidden)]
-pub use crate::async_stream::AsyncStream;
+pub use crate::async_stream::{AsyncStream, AsyncTryStream};
 
 #[doc(hidden)]
 pub use async_stream_impl;
