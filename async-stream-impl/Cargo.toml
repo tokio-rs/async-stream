@@ -1,11 +1,11 @@
 [package]
 name = "async-stream-impl"
-version = "0.3.0"
+version = "0.3.1"
 edition = "2018"
 license = "MIT"
 authors = ["Carl Lerche <me@carllerche.com>"]
 description = "proc macros for async-stream crate"
-documentation = "https://docs.rs/async-stream-impl/0.3.0/async_stream_impl"
+documentation = "https://docs.rs/async-stream-impl/0.3"
 homepage = "https://github.com/tokio-rs/async-stream"
 repository = "https://github.com/tokio-rs/async-stream"
 
@@ -18,7 +18,7 @@ syn = { version = "1", features = ["extra-traits", "full", "visit-mut"]}
 quote = "1"
 
 [dev-dependencies]
-async-stream = { version = "0.3.0", path = "../async-stream" }
+async-stream = { path = "../async-stream" }
 futures-core = "0.3"
 futures-util = "0.3"
 tokio = { version = "1", features = ["full"] }
