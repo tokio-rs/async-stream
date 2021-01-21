@@ -1,6 +1,7 @@
 use async_stream::try_stream;
 
 use futures_core::stream::Stream;
+use futures_util::pin_mut;
 use futures_util::stream::StreamExt;
 
 #[tokio::test]
@@ -77,4 +78,23 @@ async fn multi_try() {
         std::iter::repeat(123).take(9).map(Ok).collect::<Vec<_>>(),
         values
     );
+}
+
+macro_rules! try_macro {
+    ($e:expr) => {
+        $e?
+    };
+}
+
+#[tokio::test]
+async fn try_in_macro() {
+    let s = try_stream! {
+        yield "hi";
+        try_macro!(Err("bye"));
+    };
+    pin_mut!(s);
+
+    assert_eq!(s.next().await, Some(Ok("hi")));
+    assert_eq!(s.next().await, Some(Err("bye")));
+    assert_eq!(s.next().await, None);
 }
