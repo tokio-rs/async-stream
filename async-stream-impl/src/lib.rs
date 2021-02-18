@@ -1,3 +1,4 @@
+extern crate proc_macro;
 use proc_macro::TokenStream;
 use proc_macro2::{Group, TokenStream as TokenStream2, TokenTree};
 use quote::quote;
