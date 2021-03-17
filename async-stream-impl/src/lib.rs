@@ -5,6 +5,8 @@ use syn::parse::Parser;
 use syn::visit_mut::VisitMut;
 
 struct Scrub<'a> {
+    /// Whether the stream is a try stream.
+    is_try: bool,
     /// The unit expression, `()`.
     unit: Box<syn::Expr>,
     has_yielded: bool,
@@ -22,8 +24,9 @@ fn parse_input(input: TokenStream) -> syn::Result<(TokenStream2, Vec<syn::Stmt>)
 }
 
 impl<'a> Scrub<'a> {
-    fn new(crate_path: &'a TokenStream2) -> Self {
+    fn new(is_try: bool, crate_path: &'a TokenStream2) -> Self {
         Self {
+            is_try,
             unit: syn::parse_quote!(()),
             has_yielded: false,
             crate_path,
@@ -41,7 +44,26 @@ impl VisitMut for Scrub<'_> {
 
                 // let ident = &self.yielder;
 
-                *i = syn::parse_quote! { __yield_tx.send(#value_expr).await };
+                *i = if self.is_try {
+                    syn::parse_quote! { __yield_tx.send(::core::result::Result::Ok(#value_expr)).await }
+                } else {
+                    syn::parse_quote! { __yield_tx.send(#value_expr).await }
+                };
+            }
+            syn::Expr::Try(try_expr) => {
+                syn::visit_mut::visit_expr_try_mut(self, try_expr);
+                // let ident = &self.yielder;
+                let e = &try_expr.expr;
+
+                *i = syn::parse_quote! {
+                    match #e {
+                        ::core::result::Result::Ok(v) => v,
+                        ::core::result::Result::Err(e) => {
+                            __yield_tx.send(::core::result::Result::Err(e.into())).await;
+                            return;
+                        }
+                    }
+                };
             }
             syn::Expr::Closure(_) | syn::Expr::Async(_) => {
                 // Don't transform inner closures or async blocks.
@@ -102,7 +124,7 @@ pub fn stream_inner(input: TokenStream) -> TokenStream {
         Err(e) => return e.to_compile_error().into(),
     };
 
-    let mut scrub = Scrub::new(&crate_path);
+    let mut scrub = Scrub::new(false, &crate_path);
 
     for mut stmt in &mut stmts {
         scrub.visit_stmt_mut(&mut stmt);
@@ -136,7 +158,7 @@ pub fn try_stream_inner(input: TokenStream) -> TokenStream {
         Err(e) => return e.to_compile_error().into(),
     };
 
-    let mut scrub = Scrub::new(&crate_path);
+    let mut scrub = Scrub::new(true, &crate_path);
 
     for mut stmt in &mut stmts {
         scrub.visit_stmt_mut(&mut stmt);
@@ -152,13 +174,9 @@ pub fn try_stream_inner(input: TokenStream) -> TokenStream {
 
     quote!({
         let (mut __yield_tx, __yield_rx) = #crate_path::yielder::pair();
-        #crate_path::AsyncTryStream::new(__yield_rx, async move {
+        #crate_path::AsyncStream::new(__yield_rx, async move {
             #dummy_yield
-            let () = {
-                #(#stmts)*
-            };
-            #[allow(unreachable_code)]
-            Ok(())
+            #(#stmts)*
         })
     })
     .into()
