@@ -34,6 +34,74 @@ impl<'a> Scrub<'a> {
     }
 }
 
+use syn::parse::{Parse, ParseStream, Result};
+
+struct Partial<T>(T, TokenStream2);
+
+impl<T: Parse> Parse for Partial<T> {
+    fn parse(input: ParseStream) -> Result<Self> {
+        Ok(Partial(input.parse()?, input.parse()?))
+    }
+}
+
+fn visit_token_stream_impl(
+    visitor: &mut Scrub<'_>,
+    tokens: TokenStream2,
+    modified: &mut bool,
+    out: &mut TokenStream2,
+) {
+    use quote::ToTokens;
+    use quote::TokenStreamExt;
+
+    let mut tokens = tokens.into_iter();
+    while let Some(tt) = tokens.next() {
+        match tt {
+            TokenTree::Ident(ident) if ident == "yield" => {
+                match syn::parse2::<Partial<syn::Expr>>(tokens.collect()) {
+                    Ok(Partial(expr, rest)) => {
+                        let mut expr = syn::Expr::Yield(syn::ExprYield {
+                            attrs: vec![],
+                            yield_token: syn::token::Yield { span: ident.span() },
+                            expr: Some(Box::new(expr)),
+                        });
+
+                        visitor.visit_expr_mut(&mut expr);
+                        expr.to_tokens(out);
+                        *modified = true;
+                        tokens = rest.into_iter();
+                    }
+                    Err(e) => {
+                        out.append_all(&mut e.to_compile_error().into_iter());
+                        *modified = true;
+                        return;
+                    }
+                }
+            }
+            TokenTree::Group(group) => {
+                let mut content = group.stream();
+                *modified |= visitor.visit_token_stream(&mut content);
+                let mut new = Group::new(group.delimiter(), content);
+                new.set_span(group.span());
+                out.append(new);
+            }
+            other => out.append(other),
+        }
+    }
+}
+
+impl Scrub<'_> {
+    fn visit_token_stream(&mut self, tokens: &mut TokenStream2) -> bool {
+        let (mut out, mut modified) = (TokenStream2::new(), false);
+        visit_token_stream_impl(self, tokens.clone(), &mut modified, &mut out);
+
+        if modified {
+            *tokens = out;
+        }
+
+        modified
+    }
+}
+
 impl VisitMut for Scrub<'_> {
     fn visit_expr_mut(&mut self, i: &mut syn::Expr) {
         match i {
@@ -109,8 +177,20 @@ impl VisitMut for Scrub<'_> {
         }
     }
 
-    fn visit_item_mut(&mut self, _: &mut syn::Item) {
-        // Don't transform inner items.
+    fn visit_macro_mut(&mut self, mac: &mut syn::Macro) {
+        let mac_ident = mac.path.segments.last().map(|p| &p.ident);
+        if mac_ident.map_or(false, |i| i == "stream" || i == "try_stream") {
+            return;
+        }
+
+        self.visit_token_stream(&mut mac.tokens);
+    }
+
+    fn visit_item_mut(&mut self, i: &mut syn::Item) {
+        // Recurse into macros but otherwise don't transform inner items.
+        if let syn::Item::Macro(i) = i {
+            self.visit_macro_mut(&mut i.mac);
+        }
     }
 }
 
