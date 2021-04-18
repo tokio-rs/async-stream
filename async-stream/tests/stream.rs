@@ -81,6 +81,23 @@ async fn yield_multi_value() {
 }
 
 #[tokio::test]
+async fn unit_yield_in_select() {
+    use tokio::select;
+
+    async fn do_stuff_async() {}
+
+    let s = stream! {
+        select! {
+            _ = do_stuff_async() => yield,
+            else => yield,
+        }
+    };
+
+    let values: Vec<_> = s.collect().await;
+    assert_eq!(values.len(), 1);
+}
+
+#[tokio::test]
 async fn yield_with_select() {
     use tokio::select;
 

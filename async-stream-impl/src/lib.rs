@@ -1,7 +1,7 @@
 use proc_macro::TokenStream;
 use proc_macro2::{Group, TokenStream as TokenStream2, TokenTree};
 use quote::quote;
-use syn::parse::Parser;
+use syn::parse::{Parse, ParseStream, Parser, Result};
 use syn::visit_mut::VisitMut;
 
 struct Scrub<'a> {
@@ -34,8 +34,6 @@ impl<'a> Scrub<'a> {
     }
 }
 
-use syn::parse::{Parse, ParseStream, Result};
-
 struct Partial<T>(T, TokenStream2);
 
 impl<T: Parse> Parse for Partial<T> {
@@ -56,15 +54,11 @@ fn visit_token_stream_impl(
     let mut tokens = tokens.into_iter();
     while let Some(tt) = tokens.next() {
         match tt {
-            TokenTree::Ident(ident) if ident == "yield" => {
-                match syn::parse2::<Partial<syn::Expr>>(tokens.collect()) {
-                    Ok(Partial(expr, rest)) => {
-                        let mut expr = syn::Expr::Yield(syn::ExprYield {
-                            attrs: vec![],
-                            yield_token: syn::token::Yield { span: ident.span() },
-                            expr: Some(Box::new(expr)),
-                        });
-
+            TokenTree::Ident(i) if i == "yield" => {
+                let stream = std::iter::once(TokenTree::Ident(i)).chain(tokens).collect();
+                match syn::parse2(stream) {
+                    Ok(Partial(yield_expr, rest)) => {
+                        let mut expr = syn::Expr::Yield(yield_expr);
                         visitor.visit_expr_mut(&mut expr);
                         expr.to_tokens(out);
                         *modified = true;
