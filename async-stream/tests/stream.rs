@@ -209,6 +209,27 @@ async fn yield_non_unpin_value() {
 }
 
 #[test]
+fn inner_try_stream() {
+    use async_stream::try_stream;
+    use tokio::select;
+
+    async fn do_stuff_async() {}
+
+    let _ = stream! {
+        select! {
+            _ = do_stuff_async() => {
+                let another_s = try_stream! {
+                    yield;
+                };
+                let _: Result<(), ()> = Box::pin(another_s).next().await.unwrap();
+            },
+            else => {},
+        }
+        yield
+    };
+}
+
+#[test]
 fn test() {
     let t = trybuild::TestCases::new();
     t.compile_fail("tests/ui/*.rs");

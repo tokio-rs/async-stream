@@ -51,7 +51,7 @@ fn visit_token_stream_impl(
     use quote::ToTokens;
     use quote::TokenStreamExt;
 
-    let mut tokens = tokens.into_iter();
+    let mut tokens = tokens.into_iter().peekable();
     while let Some(tt) = tokens.next() {
         match tt {
             TokenTree::Ident(i) if i == "yield" => {
@@ -62,13 +62,25 @@ fn visit_token_stream_impl(
                         visitor.visit_expr_mut(&mut expr);
                         expr.to_tokens(out);
                         *modified = true;
-                        tokens = rest.into_iter();
+                        tokens = rest.into_iter().peekable();
                     }
                     Err(e) => {
                         out.append_all(&mut e.to_compile_error().into_iter());
                         *modified = true;
                         return;
                     }
+                }
+            }
+            TokenTree::Ident(i) if i == "stream" || i == "try_stream" => {
+                out.append(TokenTree::Ident(i));
+                match tokens.peek() {
+                    Some(TokenTree::Punct(p)) if p.as_char() == '!' => {
+                        out.extend(tokens.next()); // !
+                        if let Some(TokenTree::Group(_)) = tokens.peek() {
+                            out.extend(tokens.next()); // { .. } or [ .. ] or ( .. )
+                        }
+                    }
+                    _ => {}
                 }
             }
             TokenTree::Group(group) => {
