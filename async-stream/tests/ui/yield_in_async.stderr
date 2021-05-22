@@ -12,7 +12,7 @@ error[E0727]: `async` generators are not yet supported
 6 |             yield 123;
   |             ^^^^^^^^^
 
-error[E0271]: type mismatch resolving `<[static generator@$DIR/src/lib.rs:202:9: 202:67] as Generator<ResumeTy>>::Yield == ()`
+error[E0271]: type mismatch resolving `<[static generator@$DIR/src/lib.rs:201:9: 201:67] as Generator<ResumeTy>>::Yield == ()`
   --> $DIR/yield_in_async.rs:4:5
    |
 4  | /     stream! {
