@@ -1,11 +1,11 @@
 [package]
 name = "async-stream-impl"
-version = "0.3.1"
+version = "0.3.2"
 edition = "2018"
 license = "MIT"
 authors = ["Carl Lerche <me@carllerche.com>"]
 description = "proc macros for async-stream crate"
-documentation = "https://docs.rs/async-stream-impl/0.3"
+documentation = "https://docs.rs/async-stream-impl"
 homepage = "https://github.com/tokio-rs/async-stream"
 repository = "https://github.com/tokio-rs/async-stream"
 
