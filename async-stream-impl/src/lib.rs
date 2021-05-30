@@ -9,7 +9,6 @@ struct Scrub<'a> {
     is_try: bool,
     /// The unit expression, `()`.
     unit: Box<syn::Expr>,
-    has_yielded: bool,
     crate_path: &'a TokenStream2,
 }
 
@@ -28,7 +27,6 @@ impl<'a> Scrub<'a> {
         Self {
             is_try,
             unit: syn::parse_quote!(()),
-            has_yielded: false,
             crate_path,
         }
     }
@@ -112,11 +110,7 @@ impl VisitMut for Scrub<'_> {
     fn visit_expr_mut(&mut self, i: &mut syn::Expr) {
         match i {
             syn::Expr::Yield(yield_expr) => {
-                self.has_yielded = true;
-
                 let value_expr = yield_expr.expr.as_ref().unwrap_or(&self.unit);
-
-                // let ident = &self.yielder;
 
                 *i = if self.is_try {
                     syn::parse_quote! { __yield_tx.send(::core::result::Result::Ok(#value_expr)).await }
@@ -126,7 +120,6 @@ impl VisitMut for Scrub<'_> {
             }
             syn::Expr::Try(try_expr) => {
                 syn::visit_mut::visit_expr_try_mut(self, try_expr);
-                // let ident = &self.yielder;
                 let e = &try_expr.expr;
 
                 *i = syn::parse_quote! {
@@ -211,23 +204,10 @@ pub fn stream_inner(input: TokenStream) -> TokenStream {
     };
 
     let mut scrub = Scrub::new(false, &crate_path);
-
-    for mut stmt in &mut stmts {
-        scrub.visit_stmt_mut(&mut stmt);
-    }
-
-    let dummy_yield = if scrub.has_yielded {
-        None
-    } else {
-        Some(quote!(if false {
-            __yield_tx.send(()).await;
-        }))
-    };
-
+    stmts.iter_mut().for_each(|s| scrub.visit_stmt_mut(s));
     quote!({
         let (mut __yield_tx, __yield_rx) = #crate_path::yielder::pair();
         #crate_path::AsyncStream::new(__yield_rx, async move {
-            #dummy_yield
             #(#stmts)*
         })
     })
@@ -245,23 +225,10 @@ pub fn try_stream_inner(input: TokenStream) -> TokenStream {
     };
 
     let mut scrub = Scrub::new(true, &crate_path);
-
-    for mut stmt in &mut stmts {
-        scrub.visit_stmt_mut(&mut stmt);
-    }
-
-    let dummy_yield = if scrub.has_yielded {
-        None
-    } else {
-        Some(quote!(if false {
-            __yield_tx.send(()).await;
-        }))
-    };
-
+    stmts.iter_mut().for_each(|s| scrub.visit_stmt_mut(s));
     quote!({
         let (mut __yield_tx, __yield_rx) = #crate_path::yielder::pair();
         #crate_path::AsyncStream::new(__yield_rx, async move {
-            #dummy_yield
             #(#stmts)*
         })
     })

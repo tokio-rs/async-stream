@@ -6,11 +6,23 @@ error[E0658]: yield syntax is experimental
   |
   = note: see issue #43122 <https://github.com/rust-lang/rust/issues/43122> for more information
 
+error[E0282]: type annotations needed for `(async_stream::yielder::Sender<T>, async_stream::yielder::Receiver<T>)`
+ --> $DIR/yield_in_nested_fn.rs:4:5
+  |
+4 | /     stream! {
+5 | |         fn foo() {
+6 | |             yield "hello";
+7 | |         }
+8 | |     };
+  | |      ^
+  | |      |
+  | |______consider giving this pattern the explicit type `(async_stream::yielder::Sender<T>, async_stream::yielder::Receiver<T>)`, where the type parameter `T` is specified
+  |        cannot infer type for type parameter `T` declared on the function `pair`
+  |
+  = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
+
 error[E0627]: yield expression outside of generator literal
  --> $DIR/yield_in_nested_fn.rs:6:13
   |
 6 |             yield "hello";
   |             ^^^^^^^^^^^^^
-
-Some errors have detailed explanations: E0627, E0658.
-For more information about an error, try `rustc --explain E0627`.
