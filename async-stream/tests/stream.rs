@@ -8,7 +8,25 @@ use tokio_test::assert_ok;
 
 #[tokio::test]
 async fn noop_stream() {
-    let s = stream! {};
+    fn any<T>() -> impl Stream<Item = T> {
+        stream! {}
+    }
+
+    let s = any::<()>();
+    pin_mut!(s);
+
+    while let Some(_) = s.next().await {
+        unreachable!();
+    }
+
+    let s = any::<usize>();
+    pin_mut!(s);
+
+    while let Some(_) = s.next().await {
+        unreachable!();
+    }
+
+    let s = any::<String>();
     pin_mut!(s);
 
     while let Some(_) = s.next().await {
@@ -21,11 +39,14 @@ async fn empty_stream() {
     let mut ran = false;
 
     {
-        let r = &mut ran;
-        let s = stream! {
-            *r = true;
-            println!("hello world!");
-        };
+        fn unit(r: &mut bool) -> impl Stream<Item = ()> + '_ {
+            stream! {
+                *r = true;
+                println!("hello world!");
+            }
+        }
+
+        let s = unit(&mut ran);
         pin_mut!(s);
 
         while let Some(_) = s.next().await {
