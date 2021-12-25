@@ -11,7 +11,7 @@ async fn noop_stream() {
     let s = stream! {};
     pin_mut!(s);
 
-    while let Some(_) = s.next().await {
+    while s.next().await.is_some() {
         unreachable!();
     }
 }
@@ -28,7 +28,7 @@ async fn empty_stream() {
         };
         pin_mut!(s);
 
-        while let Some(_) = s.next().await {
+        while s.next().await.is_some() {
             unreachable!();
         }
     }
