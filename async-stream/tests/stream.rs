@@ -229,6 +229,7 @@ fn inner_try_stream() {
     };
 }
 
+#[rustversion::attr(not(stable), ignore)]
 #[test]
 fn test() {
     let t = trybuild::TestCases::new();
