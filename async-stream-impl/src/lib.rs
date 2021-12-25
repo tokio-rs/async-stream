@@ -212,8 +212,8 @@ pub fn stream_inner(input: TokenStream) -> TokenStream {
 
     let mut scrub = Scrub::new(false, &crate_path);
 
-    for mut stmt in &mut stmts {
-        scrub.visit_stmt_mut(&mut stmt);
+    for stmt in &mut stmts {
+        scrub.visit_stmt_mut(stmt);
     }
 
     let dummy_yield = if scrub.has_yielded {
@@ -246,8 +246,8 @@ pub fn try_stream_inner(input: TokenStream) -> TokenStream {
 
     let mut scrub = Scrub::new(true, &crate_path);
 
-    for mut stmt in &mut stmts {
-        scrub.visit_stmt_mut(&mut stmt);
+    for stmt in &mut stmts {
+        scrub.visit_stmt_mut(stmt);
     }
 
     let dummy_yield = if scrub.has_yielded {
