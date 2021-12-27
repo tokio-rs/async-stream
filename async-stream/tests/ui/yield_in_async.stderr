@@ -1,5 +1,5 @@
 error[E0658]: yield syntax is experimental
- --> $DIR/yield_in_async.rs:6:13
+ --> tests/ui/yield_in_async.rs:6:13
   |
 6 |             yield 123;
   |             ^^^^^^^^^
@@ -7,13 +7,13 @@ error[E0658]: yield syntax is experimental
   = note: see issue #43122 <https://github.com/rust-lang/rust/issues/43122> for more information
 
 error[E0727]: `async` generators are not yet supported
- --> $DIR/yield_in_async.rs:6:13
+ --> tests/ui/yield_in_async.rs:6:13
   |
 6 |             yield 123;
   |             ^^^^^^^^^
 
 error[E0271]: type mismatch resolving `<[static generator@$DIR/src/lib.rs:201:9: 201:67] as Generator<ResumeTy>>::Yield == ()`
-  --> $DIR/yield_in_async.rs:4:5
+  --> tests/ui/yield_in_async.rs:4:5
    |
 4  | /     stream! {
 5  | |         let f = async {
