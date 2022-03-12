@@ -78,3 +78,10 @@ async fn multi_try() {
         values
     );
 }
+
+#[allow(unused)]
+fn issue_65() -> impl Stream<Item = Result<u32, ()>> {
+    try_stream! {
+        yield Err(())?;
+    }
+}
