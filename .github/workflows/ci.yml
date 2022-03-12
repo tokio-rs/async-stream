@@ -22,7 +22,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
       - name: Install Rust
         run: rustup update stable
       - run: rustup component add rust-src
@@ -31,7 +31,7 @@ jobs:
   minrust:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Install Rust
         run: rustup update ${{ env.minrust }} && rustup default ${{ env.minrust }}
       - run: cargo build --all-features
@@ -39,7 +39,7 @@ jobs:
   fmt:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
       - name: Install Rust
         run: rustup update stable
       - run: cargo fmt --all -- --check
@@ -47,7 +47,7 @@ jobs:
   clippy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
       - name: Install Rust
         run: rustup update stable
       - run: cargo clippy --all-features
@@ -55,7 +55,7 @@ jobs:
   docs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Install Rust
         run: rustup update nightly && rustup default nightly
       - run: cargo doc --no-deps --all-features
