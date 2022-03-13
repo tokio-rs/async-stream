@@ -1,3 +1,7 @@
+# 0.3.3
+
+* Fix a bug where `yield` and `?` cannot be used on the same line (#66)
+
 # 0.3.2
 
 * Expand `yield` in internal macro calls (#57)
