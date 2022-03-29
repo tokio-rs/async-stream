@@ -1,3 +1,5 @@
+#![cfg(feature = "macro")]
+
 use async_stream::stream;
 
 use futures_core::stream::{FusedStream, Stream};

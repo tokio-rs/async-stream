@@ -7,12 +7,12 @@ use tokio::net::TcpListener;
 async fn main() {
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
 
-    let incoming = stream! {
+    let incoming = stream(|mut stream| async move {
         loop {
             let (socket, _) = listener.accept().await.unwrap();
-            yield socket;
+            stream.yield_item(socket).await;
         }
-    };
+    });
     pin_mut!(incoming);
 
     while let Some(v) = incoming.next().await {

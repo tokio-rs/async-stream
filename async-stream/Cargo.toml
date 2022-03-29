@@ -11,9 +11,13 @@ authors = ["Carl Lerche <me@carllerche.com>"]
 description = "Asynchronous streams using async & await notation"
 repository = "https://github.com/tokio-rs/async-stream"
 
+[features]
+macro = ["async-stream-impl"]
+
 [dependencies]
-async-stream-impl = { version = "=0.3.3", path = "../async-stream-impl" }
+async-stream-impl = { version = "=0.3.3", path = "../async-stream-impl", optional = true }
 futures-core = "0.3"
+pin-project-lite = "0.2.8"
 
 [dev-dependencies]
 futures-util = "0.3"
@@ -21,3 +25,7 @@ rustversion = "1"
 tokio = { version = "1", features = ["full"] }
 tokio-test = "0.4"
 trybuild = "1"
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "doc_nightly"]
