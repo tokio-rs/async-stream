@@ -66,7 +66,7 @@ async fn multi_try() {
     fn test() -> impl Stream<Item = Result<i32, String>> {
         try_stream! {
             let a = Ok::<_,  String>(Ok::<_,  String>(123))??;
-            for _ in (1..10) {
+            for _ in 1..10 {
                 yield a;
             }
         }
