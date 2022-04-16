@@ -289,7 +289,9 @@ fn replace_for_await(input: impl IntoIterator<Item = TokenTree>) -> TokenStream2
             }
             TokenTree::Group(group) => {
                 let stream = replace_for_await(group.stream());
-                tokens.push(Group::new(group.delimiter(), stream).into());
+                let mut new_group = Group::new(group.delimiter(), stream);
+                new_group.set_span(group.span());
+                tokens.push(new_group.into());
             }
             _ => tokens.push(token),
         }
