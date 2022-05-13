@@ -10,7 +10,7 @@ The `stream!` macro returns an anonymous type implementing the [`Stream`]
 trait. The `Item` associated type is the type of the values yielded from the
 stream. The `try_stream!` also returns an anonymous type implementing the
 [`Stream`] trait, but the `Item` associated type is `Result<T, Error>`. The
-`try_stream!` macro supports using `?` notiation as part of the
+`try_stream!` macro supports using `?` notation as part of the
 implementation.
 
 ## Usage
