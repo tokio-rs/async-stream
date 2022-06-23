@@ -40,8 +40,8 @@ where
     type Item = T;
 
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
-        unsafe {
-            let me = Pin::get_unchecked_mut(self);
+        
+            let me = unsafe { Pin::get_unchecked_mut(self) };
 
             if me.done {
                 return Poll::Ready(None);
@@ -50,7 +50,7 @@ where
             let mut dst = None;
             let res = {
                 let _enter = me.rx.enter(&mut dst);
-                Pin::new_unchecked(&mut me.generator).poll(cx)
+                unsafe { Pin::new_unchecked(&mut me.generator).poll(cx) }
             };
 
             me.done = res.is_ready();
@@ -64,7 +64,7 @@ where
             } else {
                 Poll::Pending
             }
-        }
+        
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
