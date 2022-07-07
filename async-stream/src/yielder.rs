@@ -53,9 +53,9 @@ impl<T> Future for Send<T> {
             return Poll::Ready(());
         }
 
-        STORE.with(|cell| unsafe {
+        STORE.with(|cell| {
             let ptr = cell.get() as *mut Option<T>;
-            let option_ref = ptr.as_mut().expect("invalid usage");
+            let option_ref = unsafe { ptr.as_mut() }.expect("invalid usage");
 
             if option_ref.is_none() {
                 *option_ref = self.value.take();

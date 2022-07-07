@@ -14,6 +14,7 @@ repository = "https://github.com/tokio-rs/async-stream"
 [dependencies]
 async-stream-impl = { version = "=0.3.3", path = "../async-stream-impl" }
 futures-core = "0.3"
+pin-project-lite = "0.2"
 
 [dev-dependencies]
 futures-util = "0.3"
