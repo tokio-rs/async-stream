@@ -29,6 +29,8 @@ jobs:
       - run: cargo test --all-features
 
   minrust:
+    env:
+      CARGO_NET_GIT_FETCH_WITH_CLI: true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

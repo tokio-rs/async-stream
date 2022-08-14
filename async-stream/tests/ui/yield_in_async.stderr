@@ -21,8 +21,8 @@ error[E0271]: type mismatch resolving `<[static generator@$DIR/tests/ui/yield_in
 7  | |         };
    | |_________^ expected `()`, found integer
    |
-note: required by a bound in `from_generator`
+note: required by a bound in `std::future::from_generator`
   --> $RUST/core/src/future/mod.rs
    |
    |     T: Generator<ResumeTy, Yield = ()>,
-   |                            ^^^^^^^^^^ required by this bound in `from_generator`
+   |                            ^^^^^^^^^^ required by this bound in `std::future::from_generator`
