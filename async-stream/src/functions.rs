@@ -295,20 +295,23 @@ impl<T> Stream<T> {
         const OUTSIDE_CONTEXT_PANIC: &str = "called `yield_item` outside of stream context";
         const DOUBLE_YIELD_PANIC: &str = "called `yield_item` twice in the same context";
 
-        // Loop through the stack of streams that are currently being polled to try and find our
-        // one. Although this is `O(n)` other than in pathological cases `n` will be very small.
-        let mut option_stream = CURRENT_CONTAINING_STREAM.with(Cell::get);
-        let mut slot = loop {
-            let stream = option_stream.expect(OUTSIDE_CONTEXT_PANIC);
-            if stream.addr == self.addr {
-                break stream.slot.cast::<Option<T>>();
-            }
-            option_stream = unsafe { *stream.next.as_ref() };
-        };
+        // Use a scope to ensure the surrounding future can still be `Send + Sync`.
+        {
+            // Loop through the stack of streams that are currently being polled to try and find our
+            // one. Although this is `O(n)` other than in pathological cases `n` will be very small.
+            let mut option_stream = CURRENT_CONTAINING_STREAM.with(Cell::get);
+            let mut slot = loop {
+                let stream = option_stream.expect(OUTSIDE_CONTEXT_PANIC);
+                if stream.addr == self.addr {
+                    break stream.slot.cast::<Option<T>>();
+                }
+                option_stream = unsafe { *stream.next.as_ref() };
+            };
 
-        let slot = unsafe { slot.as_mut() };
-        assert!(slot.is_none(), "{}", DOUBLE_YIELD_PANIC);
-        *slot = Some(item);
+            let slot = unsafe { slot.as_mut() };
+            assert!(slot.is_none(), "{}", DOUBLE_YIELD_PANIC);
+            *slot = Some(item);
+        }
 
         PendOnce::default().await;
     }
