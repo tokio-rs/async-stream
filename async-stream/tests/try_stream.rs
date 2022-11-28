@@ -1,7 +1,10 @@
+#![cfg(feature = "macro")]
+
 use async_stream::try_stream;
 
 use futures_core::stream::Stream;
 use futures_util::stream::StreamExt;
+use tokio::pin;
 
 #[tokio::test]
 async fn single_err() {
@@ -84,4 +87,23 @@ fn issue_65() -> impl Stream<Item = Result<u32, ()>> {
     try_stream! {
         yield Err(())?;
     }
+}
+
+macro_rules! try_macro {
+    ($e:expr) => {
+        $e?
+    };
+}
+
+#[tokio::test]
+async fn try_in_macro() {
+    let s = try_stream! {
+        yield "hi";
+        try_macro!(Err("bye"));
+    };
+    pin!(s);
+
+    assert_eq!(s.next().await, Some(Ok("hi")));
+    assert_eq!(s.next().await, Some(Err("bye")));
+    assert_eq!(s.next().await, None);
 }
