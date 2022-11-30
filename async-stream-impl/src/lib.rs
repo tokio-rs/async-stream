@@ -227,7 +227,7 @@ pub fn stream_inner(input: TokenStream) -> TokenStream {
     };
 
     quote!({
-        let (mut __yield_tx, __yield_rx) = #crate_path::__private::yielder::pair();
+        let (mut __yield_tx, __yield_rx) = unsafe { #crate_path::__private::yielder::pair() };
         #crate_path::__private::AsyncStream::new(__yield_rx, async move {
             #dummy_yield
             #(#stmts)*
@@ -261,7 +261,7 @@ pub fn try_stream_inner(input: TokenStream) -> TokenStream {
     };
 
     quote!({
-        let (mut __yield_tx, __yield_rx) = #crate_path::__private::yielder::pair();
+        let (mut __yield_tx, __yield_rx) = unsafe { #crate_path::__private::yielder::pair() };
         #crate_path::__private::AsyncStream::new(__yield_rx, async move {
             #dummy_yield
             #(#stmts)*
