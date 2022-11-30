@@ -20,6 +20,7 @@ pub(crate) struct Enter<'a, T> {
     prev: *mut (),
 }
 
+#[doc(hidden)]
 pub fn pair<T>() -> (Sender<T>, Receiver<T>) {
     let tx = Sender { _p: PhantomData };
     let rx = Receiver { _p: PhantomData };

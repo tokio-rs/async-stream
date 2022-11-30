@@ -173,7 +173,7 @@ impl VisitMut for Scrub<'_> {
                     };
                     #label
                     loop {
-                        let #pat = match #crate_path::reexport::next(&mut __pinned).await {
+                        let #pat = match #crate_path::__private::next(&mut __pinned).await {
                             ::core::option::Option::Some(e) => e,
                             ::core::option::Option::None => break,
                         };
@@ -227,8 +227,8 @@ pub fn stream_inner(input: TokenStream) -> TokenStream {
     };
 
     quote!({
-        let (mut __yield_tx, __yield_rx) = #crate_path::yielder::pair();
-        #crate_path::AsyncStream::new(__yield_rx, async move {
+        let (mut __yield_tx, __yield_rx) = #crate_path::__private::yielder::pair();
+        #crate_path::__private::AsyncStream::new(__yield_rx, async move {
             #dummy_yield
             #(#stmts)*
         })
@@ -261,8 +261,8 @@ pub fn try_stream_inner(input: TokenStream) -> TokenStream {
     };
 
     quote!({
-        let (mut __yield_tx, __yield_rx) = #crate_path::yielder::pair();
-        #crate_path::AsyncStream::new(__yield_rx, async move {
+        let (mut __yield_tx, __yield_rx) = #crate_path::__private::yielder::pair();
+        #crate_path::__private::AsyncStream::new(__yield_rx, async move {
             #dummy_yield
             #(#stmts)*
         })

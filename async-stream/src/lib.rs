@@ -158,15 +158,7 @@
 
 mod async_stream;
 mod next;
-#[doc(hidden)]
-pub mod yielder;
-
-// Used by the macro, but not intended to be accessed publicly.
-#[doc(hidden)]
-pub use crate::async_stream::AsyncStream;
-
-#[doc(hidden)]
-pub use async_stream_impl;
+mod yielder;
 
 /// Asynchronous stream
 ///
@@ -198,7 +190,7 @@ pub use async_stream_impl;
 #[macro_export]
 macro_rules! stream {
     ($($tt:tt)*) => {
-        $crate::async_stream_impl::stream_inner!(($crate) $($tt)*)
+        $crate::__private::stream_inner!(($crate) $($tt)*)
     }
 }
 
@@ -234,12 +226,17 @@ macro_rules! stream {
 #[macro_export]
 macro_rules! try_stream {
     ($($tt:tt)*) => {
-        $crate::async_stream_impl::try_stream_inner!(($crate) $($tt)*)
+        $crate::__private::try_stream_inner!(($crate) $($tt)*)
     }
 }
 
+// Not public API.
 #[doc(hidden)]
-pub mod reexport {
-    #[doc(hidden)]
+pub mod __private {
+    pub use crate::async_stream::AsyncStream;
     pub use crate::next::next;
+    pub use async_stream_impl::{stream_inner, try_stream_inner};
+    pub mod yielder {
+        pub use crate::yielder::pair;
+    }
 }
