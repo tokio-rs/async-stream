@@ -20,7 +20,12 @@ pub(crate) struct Enter<'a, T> {
     prev: *mut (),
 }
 
-pub fn pair<T>() -> (Sender<T>, Receiver<T>) {
+// Note: It is considered unsound for anyone other than our macros to call
+// this function. This is a private API intended only for calls from our
+// macros, and users should never call it, but some people tend to
+// misinterpret it as fine to call unless it is marked unsafe.
+#[doc(hidden)]
+pub unsafe fn pair<T>() -> (Sender<T>, Receiver<T>) {
     let tx = Sender { _p: PhantomData };
     let rx = Receiver { _p: PhantomData };
     (tx, rx)
