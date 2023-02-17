@@ -144,7 +144,7 @@
 //! # Implementation
 //!
 //! The `stream!` and `try_stream!` macros are implemented using proc macros.
-//! The macro searches the syntax tree for instances of `sender.send($expr)` and
+//! The macro searches the syntax tree for instances of `yield $expr` and
 //! transforms them into `sender.send($expr).await`.
 //!
 //! The stream uses a lightweight sender to send values from the stream
