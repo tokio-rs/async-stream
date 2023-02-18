@@ -1,3 +1,8 @@
+# 0.3.4
+
+* Improve support for `#[track_caller]` (#72)
+* Reduce unsafe code (#77)
+
 # 0.3.3
 
 * Fix a bug where `yield` and `?` cannot be used on the same line (#66)
