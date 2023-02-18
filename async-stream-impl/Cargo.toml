@@ -1,6 +1,6 @@
 [package]
 name = "async-stream-impl"
-version = "0.3.3"
+version = "0.3.4"
 edition = "2018"
 rust-version = "1.45"
 license = "MIT"
