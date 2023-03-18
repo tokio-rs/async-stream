@@ -147,7 +147,7 @@ impl VisitMut for Scrub<'_> {
             syn::Expr::ForLoop(expr) => {
                 syn::visit_mut::visit_expr_for_loop_mut(self, expr);
                 // TODO: Should we allow other attributes?
-                if expr.attrs.len() != 1 || !expr.attrs[0].path.is_ident("await") {
+                if expr.attrs.len() != 1 || !expr.attrs[0].meta.path().is_ident("await_") {
                     return;
                 }
                 let syn::ExprForLoop {
@@ -160,7 +160,7 @@ impl VisitMut for Scrub<'_> {
                 } = expr;
 
                 let attr = attrs.pop().unwrap();
-                if let Err(e) = syn::parse2::<syn::parse::Nothing>(attr.tokens) {
+                if let Err(e) = attr.parse_args::<syn::parse::Nothing>() {
                     *i = syn::parse2(e.to_compile_error()).unwrap();
                     return;
                 }
@@ -280,7 +280,14 @@ fn replace_for_await(input: impl IntoIterator<Item = TokenTree>) -> TokenStream2
             TokenTree::Ident(ident) => {
                 match input.peek() {
                     Some(TokenTree::Ident(next)) if ident == "for" && next == "await" => {
-                        tokens.extend(quote!(#[#next]));
+                        let next_span = next.span();
+                        // syn 2.0 wont parse `#[await] for x in xs {}`
+                        // because `await` is a keyword, use `await_` instead
+                        let next = quote::quote_spanned! {next_span=>
+                            await_
+                        };
+                        // add `()` because they're required by `Attribute::parse_args`
+                        tokens.extend(quote!(#[#next()]));
                         let _ = input.next();
                     }
                     _ => {}
