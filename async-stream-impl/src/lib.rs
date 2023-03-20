@@ -160,7 +160,7 @@ impl VisitMut for Scrub<'_> {
                 } = expr;
 
                 let attr = attrs.pop().unwrap();
-                if let Err(e) = attr.parse_args::<syn::parse::Nothing>() {
+                if let Err(e) = attr.meta.require_path_only() {
                     *i = syn::parse2(e.to_compile_error()).unwrap();
                     return;
                 }
@@ -286,8 +286,7 @@ fn replace_for_await(input: impl IntoIterator<Item = TokenTree>) -> TokenStream2
                         let next = quote::quote_spanned! {next_span=>
                             await_
                         };
-                        // add `()` because they're required by `Attribute::parse_args`
-                        tokens.extend(quote!(#[#next()]));
+                        tokens.extend(quote!(#[#next]));
                         let _ = input.next();
                     }
                     _ => {}
