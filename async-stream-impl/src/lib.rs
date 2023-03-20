@@ -266,6 +266,10 @@ pub fn try_stream_inner(input: TokenStream) -> TokenStream {
     .into()
 }
 
+// syn 2.0 wont parse `#[await] for x in xs {}`
+// because `await` is a keyword, use `await_` instead
+const AWAIT_ATTR_NAME: &str = "await_";
+
 /// Replace `for await` with `#[await] for`, which will be later transformed into a `next` loop.
 fn replace_for_await(input: impl IntoIterator<Item = TokenTree>) -> TokenStream2 {
     let mut input = input.into_iter().peekable();
@@ -277,11 +281,7 @@ fn replace_for_await(input: impl IntoIterator<Item = TokenTree>) -> TokenStream2
                 match input.peek() {
                     Some(TokenTree::Ident(next)) if ident == "for" && next == "await" => {
                         let next_span = next.span();
-                        // syn 2.0 wont parse `#[await] for x in xs {}`
-                        // because `await` is a keyword, use `await_` instead
-                        let next = quote::quote_spanned! {next_span=>
-                            await_
-                        };
+                        let next = syn::Ident::new(AWAIT_ATTR_NAME, next_span);
                         tokens.extend(quote!(#[#next]));
                         let _ = input.next();
                     }
