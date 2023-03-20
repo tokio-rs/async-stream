@@ -159,11 +159,7 @@ impl VisitMut for Scrub<'_> {
                     ..
                 } = expr;
 
-                let attr = attrs.pop().unwrap();
-                if let Err(e) = attr.meta.require_path_only() {
-                    *i = syn::parse2(e.to_compile_error()).unwrap();
-                    return;
-                }
+                attrs.pop().unwrap();
 
                 let crate_path = self.crate_path;
                 *i = syn::parse_quote! {{
