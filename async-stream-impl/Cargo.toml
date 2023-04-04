@@ -2,7 +2,7 @@
 name = "async-stream-impl"
 version = "0.3.4"
 edition = "2018"
-rust-version = "1.45"
+rust-version = "1.56"
 license = "MIT"
 authors = ["Carl Lerche <me@carllerche.com>"]
 description = "proc macros for async-stream crate"

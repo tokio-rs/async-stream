@@ -16,7 +16,7 @@ env:
   # This is the minimum supported Rust version of this crate.
   # When updating this, the reminder to update the minimum supported
   # Rust version in README.md, Cargo.toml, and .clippy.toml.
-  minrust: 1.45.2
+  minrust: '1.56'
 
 jobs:
   test:
