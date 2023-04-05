@@ -1,3 +1,8 @@
+# 0.3.5
+
+* Update to syn 2.0 (#93)
+* Bump MSRV to 1.56 (#97)
+
 # 0.3.4
 
 * Improve support for `#[track_caller]` (#72)
