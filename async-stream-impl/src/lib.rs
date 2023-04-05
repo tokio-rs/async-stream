@@ -147,7 +147,7 @@ impl VisitMut for Scrub<'_> {
             syn::Expr::ForLoop(expr) => {
                 syn::visit_mut::visit_expr_for_loop_mut(self, expr);
                 // TODO: Should we allow other attributes?
-                if expr.attrs.len() != 1 || !expr.attrs[0].path.is_ident("await") {
+                if expr.attrs.len() != 1 || !expr.attrs[0].meta.path().is_ident(AWAIT_ATTR_NAME) {
                     return;
                 }
                 let syn::ExprForLoop {
@@ -159,11 +159,7 @@ impl VisitMut for Scrub<'_> {
                     ..
                 } = expr;
 
-                let attr = attrs.pop().unwrap();
-                if let Err(e) = syn::parse2::<syn::parse::Nothing>(attr.tokens) {
-                    *i = syn::parse2(e.to_compile_error()).unwrap();
-                    return;
-                }
+                attrs.pop().unwrap();
 
                 let crate_path = self.crate_path;
                 *i = syn::parse_quote! {{
@@ -270,6 +266,10 @@ pub fn try_stream_inner(input: TokenStream) -> TokenStream {
     .into()
 }
 
+// syn 2.0 wont parse `#[await] for x in xs {}`
+// because `await` is a keyword, use `await_` instead
+const AWAIT_ATTR_NAME: &str = "await_";
+
 /// Replace `for await` with `#[await] for`, which will be later transformed into a `next` loop.
 fn replace_for_await(input: impl IntoIterator<Item = TokenTree>) -> TokenStream2 {
     let mut input = input.into_iter().peekable();
@@ -280,6 +280,8 @@ fn replace_for_await(input: impl IntoIterator<Item = TokenTree>) -> TokenStream2
             TokenTree::Ident(ident) => {
                 match input.peek() {
                     Some(TokenTree::Ident(next)) if ident == "for" && next == "await" => {
+                        let next_span = next.span();
+                        let next = syn::Ident::new(AWAIT_ATTR_NAME, next_span);
                         tokens.extend(quote!(#[#next]));
                         let _ = input.next();
                     }
