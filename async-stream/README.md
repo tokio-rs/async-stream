@@ -152,7 +152,7 @@ caller.
 
 ## Supported Rust Versions
 
-`async-stream` is built against the latest stable release. The minimum supported version is 1.45 due to [function-like procedural macros in expression, pattern, and statement positions](https://blog.rust-lang.org/2020/07/16/Rust-1.45.0.html#stabilizing-function-like-procedural-macros-in-expressions-patterns-and-statements).
+The current minimum supported Rust version is 1.56.
 
 ## License
 
