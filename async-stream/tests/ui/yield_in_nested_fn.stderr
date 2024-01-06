@@ -6,7 +6,7 @@ error[E0658]: yield syntax is experimental
   |
   = note: see issue #43122 <https://github.com/rust-lang/rust/issues/43122> for more information
 
-error[E0627]: yield expression outside of generator literal
+error[E0627]: yield expression outside of coroutine literal
  --> tests/ui/yield_in_nested_fn.rs:6:13
   |
 6 |             yield "hello";
