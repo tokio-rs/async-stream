@@ -13,10 +13,6 @@ on:
 env:
   RUSTFLAGS: -Dwarnings
   RUST_BACKTRACE: 1
-  # This is the minimum supported Rust version of this crate.
-  # When updating this, the reminder to update the minimum supported
-  # Rust version in README.md, Cargo.toml, and .clippy.toml.
-  minrust: '1.56'
 
 jobs:
   test:
@@ -29,14 +25,12 @@ jobs:
       - run: cargo test --all-features
 
   minrust:
-    env:
-      CARGO_NET_GIT_FETCH_WITH_CLI: true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install Rust
-        run: rustup update ${{ env.minrust }} && rustup default ${{ env.minrust }}
-      - run: cargo build --all-features
+      - name: Install cargo-hack
+        uses: taiki-e/install-action@cargo-hack
+      - run: cargo hack build --all-features --ignore-private --rust-version
 
   fmt:
     runs-on: ubuntu-latest
