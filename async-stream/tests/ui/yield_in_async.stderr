@@ -11,9 +11,3 @@ error[E0727]: `async` coroutines are not yet supported
   |
 6 |             yield 123;
   |             ^^^^^^^^^
-
-error[E0308]: mismatched types
- --> tests/ui/yield_in_async.rs:6:19
-  |
-6 |             yield 123;
-  |                   ^^^ expected `()`, found integer
