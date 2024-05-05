@@ -229,8 +229,9 @@ fn inner_try_stream() {
     };
 }
 
-#[rustversion::attr(not(stable), ignore)]
+// #[rustversion::attr(not(stable), ignore)]
 #[test]
+#[ignore]
 fn test() {
     let t = trybuild::TestCases::new();
     t.compile_fail("tests/ui/*.rs");

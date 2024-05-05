@@ -51,10 +51,9 @@ where
         }
 
         let mut dst = None;
-        let res = {
-            let _enter = me.rx.enter(&mut dst);
-            me.generator.poll(cx)
-        };
+        let res = me
+            .rx
+            .with_context(cx.waker(), &mut dst, |cx| me.generator.poll(cx));
 
         *me.done = res.is_ready();
 
