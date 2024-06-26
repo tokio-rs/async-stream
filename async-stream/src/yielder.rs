@@ -7,7 +7,7 @@ use std::task::{Context, Poll};
 
 #[derive(Debug)]
 pub struct Sender<T> {
-    _p: PhantomData<T>,
+    _p: PhantomData<fn(T) -> T>,
 }
 
 #[derive(Debug)]
