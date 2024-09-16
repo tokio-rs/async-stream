@@ -65,7 +65,7 @@ fn visit_token_stream_impl(
                         tokens = rest.into_iter().peekable();
                     }
                     Err(e) => {
-                        out.append_all(&mut e.to_compile_error().into_iter());
+                        out.append_all(e.to_compile_error().into_iter());
                         *modified = true;
                         return;
                     }
