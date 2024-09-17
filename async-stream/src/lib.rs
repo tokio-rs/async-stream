@@ -5,6 +5,7 @@
     unreachable_pub
 )]
 #![doc(test(no_crate_inject, attr(deny(rust_2018_idioms))))]
+#![feature(waker_getters)]
 
 //! Asynchronous stream of elements.
 //!

@@ -17,8 +17,13 @@ futures-core = "0.3"
 pin-project-lite = "0.2"
 
 [dev-dependencies]
+criterion = "0.3"
 futures-util = "0.3"
 rustversion = "1"
 tokio = { version = "1", features = ["full"] }
 tokio-test = "0.4"
 trybuild = "1"
+
+[[bench]]
+name = "simple_bench"
+harness = false
