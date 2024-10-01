@@ -10,7 +10,6 @@ macro_rules! asynk {
 }
 
 #[tokio::main]
-
 async fn main() {
     pin!(stream! {
         let yield_42 = asynk!(yield 42_usize);
