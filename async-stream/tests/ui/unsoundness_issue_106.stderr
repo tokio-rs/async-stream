@@ -1,0 +1,36 @@
+error[E0767]: use of unreachable label `'check_stream_scope`
+  --> tests/ui/unsoundness_issue_106.rs:15:10
+   |
+15 |       pin!(stream! {
+   |  __________^
+16 | |         let yield_42 = asynk!(yield 42_usize);
+17 | |         let s = stream! {
+18 | |             yield Box::new(12345);
+...  |
+27 | |         }
+28 | |     })
+   | |     ^
+   | |     |
+   | |_____unreachable label `'check_stream_scope`
+   |       unreachable label defined here
+   |
+   = note: labels are unreachable through functions, closures, async blocks and modules
+   = note: this error originates in the macro `$crate::__private::stream_inner` which comes from the expansion of the macro `stream` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0267]: `break` inside `async` block
+  --> tests/ui/unsoundness_issue_106.rs:15:10
+   |
+8  |           async { $e }
+   |           ----- enclosing `async` block
+...
+15 |       pin!(stream! {
+   |  __________^
+16 | |         let yield_42 = asynk!(yield 42_usize);
+17 | |         let s = stream! {
+18 | |             yield Box::new(12345);
+...  |
+27 | |         }
+28 | |     })
+   | |_____^ cannot `break` inside `async` block
+   |
+   = note: this error originates in the macro `$crate::__private::stream_inner` which comes from the expansion of the macro `stream` (in Nightly builds, run with -Z macro-backtrace for more info)
