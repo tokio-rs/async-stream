@@ -1,3 +1,8 @@
+# 0.3.6
+
+* Fix soundness bugs (#109)
+* Bump MSRV to 1.65 (#109)
+
 # 0.3.5
 
 * Update to syn 2.0 (#93)
