@@ -34,10 +34,7 @@ pub unsafe fn pair<T>() -> (Sender<T>, Receiver<T>) {
 // Tracks the pointer to `Option<T>`.
 //
 // TODO: Ensure wakers match?
-thread_local! {
-    #[allow(clippy::missing_const_for_thread_local)]
-    static STORE: Cell<*mut ()> = Cell::new(ptr::null_mut())
-}
+thread_local!(static STORE: Cell<*mut ()> = const { Cell::new(ptr::null_mut()) });
 
 // ===== impl Sender =====
 
