@@ -152,7 +152,7 @@ caller.
 
 ## Supported Rust Versions
 
-The current minimum supported Rust version is 1.56.
+The current minimum supported Rust version is 1.65.
 
 ## License
 

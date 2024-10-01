@@ -7,7 +7,7 @@ use std::task::{Context, Poll};
 
 #[derive(Debug)]
 pub struct Sender<T> {
-    _p: PhantomData<T>,
+    _p: PhantomData<fn(T) -> T>,
 }
 
 #[derive(Debug)]
@@ -34,7 +34,7 @@ pub unsafe fn pair<T>() -> (Sender<T>, Receiver<T>) {
 // Tracks the pointer to `Option<T>`.
 //
 // TODO: Ensure wakers match?
-thread_local!(static STORE: Cell<*mut ()> = Cell::new(ptr::null_mut()));
+thread_local!(static STORE: Cell<*mut ()> = const { Cell::new(ptr::null_mut()) });
 
 // ===== impl Sender =====
 
