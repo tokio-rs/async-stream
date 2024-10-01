@@ -129,7 +129,7 @@ impl VisitMut for Scrub<'_> {
                     {
                         #[allow(unreachable_code)]
                         if false {
-                            break 'check_stream_scope (loop {});
+                            break '__async_stream_private_check_scope (loop {});
                         }
                         #yield_expr
                     }
@@ -234,7 +234,7 @@ pub fn stream_inner(input: TokenStream) -> TokenStream {
     quote!({
         let (mut __yield_tx, __yield_rx) = unsafe { #crate_path::__private::yielder::pair() };
         #crate_path::__private::AsyncStream::new(__yield_rx, async move {
-            'check_stream_scope: {
+            '__async_stream_private_check_scope: {
                 #dummy_yield
                 #(#stmts)*
             }
@@ -270,7 +270,7 @@ pub fn try_stream_inner(input: TokenStream) -> TokenStream {
     quote!({
         let (mut __yield_tx, __yield_rx) = unsafe { #crate_path::__private::yielder::pair() };
         #crate_path::__private::AsyncStream::new(__yield_rx, async move {
-            'check_stream_scope: {
+            '__async_stream_private_check_scope: {
                 #dummy_yield
                 #(#stmts)*
             }
