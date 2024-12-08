@@ -87,7 +87,7 @@ impl<T> Receiver<T> {
 
 // ===== impl Enter =====
 
-impl<'a, T> Drop for Enter<'a, T> {
+impl<T> Drop for Enter<'_, T> {
     fn drop(&mut self) {
         STORE.with(|cell| cell.set(self.prev));
     }

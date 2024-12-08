@@ -161,7 +161,7 @@ async fn borrow_self() {
     struct Data(String);
 
     impl Data {
-        fn stream<'a>(&'a self) -> impl Stream<Item = &str> + 'a {
+        fn stream(&self) -> impl Stream<Item = &str> + '_ {
             stream! {
                 yield &self.0[..];
             }
