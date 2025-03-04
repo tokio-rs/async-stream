@@ -1,3 +1,5 @@
+use std::cell::Cell;
+
 use async_stream::stream;
 
 use futures_core::stream::{FusedStream, Stream};
@@ -227,6 +229,18 @@ fn inner_try_stream() {
         }
         yield
     };
+}
+
+#[test]
+fn stream_is_sync() {
+    fn assert_sync<T: Sync>(_: T) {}
+
+    // The stream should be sync even if it contains a non-sync value.
+    assert_sync(stream! {
+        let cell = Cell::new(true);
+        yield 5;
+        drop(cell);
+    });
 }
 
 #[rustversion::attr(not(stable), ignore)]
