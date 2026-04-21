@@ -2,7 +2,7 @@
 name = "reexporter"
 version = "0.0.0"
 authors = []
-edition = "2021"
+edition = "2024"
 publish = false
 
 [dependencies]
