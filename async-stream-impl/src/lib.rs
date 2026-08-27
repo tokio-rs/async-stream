@@ -192,7 +192,7 @@ impl VisitMut for Scrub<'_> {
 
     fn visit_macro_mut(&mut self, mac: &mut syn::Macro) {
         let mac_ident = mac.path.segments.last().map(|p| &p.ident);
-        if mac_ident.map_or(false, |i| i == "stream" || i == "try_stream") {
+        if mac_ident.is_some_and(|i| i == "stream" || i == "try_stream") {
             return;
         }
 
