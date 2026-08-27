@@ -32,3 +32,9 @@ error[E0277]: expected an `FnOnce(&str)` closure, found `{coroutine@$DIR/tests/u
   = help: the trait `FnOnce(&str)` is not implemented for `{coroutine@$DIR/tests/ui/yield_in_closure.rs:6:23: 6:26}`
 note: required by a bound in `Result::<T, E>::and_then`
  --> $RUST/core/src/result.rs
+  |
+  |     pub const fn and_then<U, F>(self, op: F) -> Result<U, E>
+  |                  -------- required by a bound in this associated function
+  |     where
+  |         F: [const] FnOnce(T) -> Result<U, E> + [const] Destruct,
+  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `Result::<T, E>::and_then`
