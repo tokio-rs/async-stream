@@ -1,6 +1,9 @@
 error[E0597]: `v` does not live long enough
   --> tests/ui/unsoundness_issue_107.rs:11:21
    |
+ 8 |     let mut outer = vec![];
+   |         --------- variable `outer` declared here
+ 9 |     {
 10 |         let v = vec![0; 10];
    |             - binding `v` declared here
 11 |         let v_ref = &v;
@@ -10,4 +13,7 @@ error[E0597]: `v` does not live long enough
    |     - `v` dropped here while still borrowed
 21 |     // use-after-free
 22 |     println!("{outer:?}"); // […garbage allocator internals…, 0, 0, 0]
-   |               --------- borrow later used here
+   |                ----- borrow later used here
+   |
+   = note: `outer` is a collection that stores borrowed references, but `v` does not live long enough to be stored in it
+   = help: buffer reuse with borrowed references requires unsafe code or restructuring

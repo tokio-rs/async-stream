@@ -7,7 +7,6 @@ error[E0767]: use of unreachable label `'__async_stream_private_check_scope`
 16 | |         let s = stream! {
 17 | |             yield Box::new(12345);
 ...  |
-26 | |         }
 27 | |     })
    | |     ^
    | |     |
@@ -20,7 +19,7 @@ error[E0767]: use of unreachable label `'__async_stream_private_check_scope`
 error[E0267]: `break` inside `async` block
   --> tests/ui/unsoundness_issue_106.rs:14:10
    |
-8  |           async { $e }
+ 8 |           async { $e }
    |           ----- enclosing `async` block
 ...
 14 |       pin!(stream! {
@@ -29,7 +28,6 @@ error[E0267]: `break` inside `async` block
 16 | |         let s = stream! {
 17 | |             yield Box::new(12345);
 ...  |
-26 | |         }
 27 | |     })
    | |_____^ cannot `break` inside `async` block
    |
