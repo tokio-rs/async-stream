@@ -158,6 +158,7 @@
 
 mod async_stream;
 mod next;
+mod sync_wrapper;
 mod yielder;
 
 /// Asynchronous stream

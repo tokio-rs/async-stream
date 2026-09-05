@@ -1,3 +1,4 @@
+use crate::sync_wrapper::SyncWrapper;
 use crate::yielder::Receiver;
 
 use futures_core::{FusedStream, Stream};
@@ -13,7 +14,7 @@ pin_project! {
         rx: Receiver<T>,
         done: bool,
         #[pin]
-        generator: U,
+        generator: SyncWrapper<U>,
     }
 }
 
@@ -23,7 +24,7 @@ impl<T, U> AsyncStream<T, U> {
         AsyncStream {
             rx,
             done: false,
-            generator,
+            generator: SyncWrapper::new(generator),
         }
     }
 }
