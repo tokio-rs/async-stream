@@ -1,3 +1,9 @@
+# 0.3.7
+
+* Update to syn 3.0 (#119)
+* Bump MSRV to 1.71 (#120)
+* Make `AsyncStream` `Sync` even if the inner future is not (#115)
+
 # 0.3.6
 
 * Fix soundness bugs (#109)
