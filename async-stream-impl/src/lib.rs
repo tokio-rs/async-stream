@@ -1,5 +1,5 @@
 use proc_macro::TokenStream;
-use proc_macro2::{Group, TokenStream as TokenStream2, TokenTree};
+use proc_macro2::{Delimiter, Group, TokenStream as TokenStream2, TokenTree};
 use quote::quote;
 use syn::parse::{Parse, ParseStream, Parser, Result};
 use syn::visit_mut::VisitMut;
@@ -82,6 +82,27 @@ fn visit_token_stream_impl(
                     }
                     _ => {}
                 }
+            }
+            TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => {
+                // A brace group that parses as a block (e.g. a `select!` branch) is visited
+                // like regular code, so that `?` and `for await` are expanded too.
+                let content = match syn::Block::parse_within.parse2(group.stream()) {
+                    Ok(mut stmts) => {
+                        for stmt in &mut stmts {
+                            visitor.visit_stmt_mut(stmt);
+                        }
+                        *modified = true;
+                        quote!(#(#stmts)*)
+                    }
+                    Err(_) => {
+                        let mut content = group.stream();
+                        *modified |= visitor.visit_token_stream(&mut content);
+                        content
+                    }
+                };
+                let mut new = Group::new(group.delimiter(), content);
+                new.set_span(group.span());
+                out.append(new);
             }
             TokenTree::Group(group) => {
                 let mut content = group.stream();

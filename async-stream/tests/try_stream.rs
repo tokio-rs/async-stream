@@ -85,3 +85,35 @@ fn issue_65() -> impl Stream<Item = Result<u32, ()>> {
         yield Err(())?;
     }
 }
+
+#[tokio::test]
+async fn try_in_select() {
+    use tokio::select;
+
+    async fn ok() -> Result<u32, &'static str> {
+        Ok(1)
+    }
+
+    async fn err() -> Result<u32, &'static str> {
+        Err("hello")
+    }
+
+    let s = try_stream! {
+        select! {
+            v = ok() => {
+                let v = v?;
+                yield v;
+            }
+        }
+        select! {
+            v = err() => {
+                let v = v?;
+                yield v;
+            }
+        }
+        yield 2;
+    };
+
+    let values: Vec<_> = s.collect().await;
+    assert_eq!(values, vec![Ok(1), Err("hello")]);
+}
